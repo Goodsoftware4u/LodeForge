@@ -1,0 +1,1498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LodeForge — System Suite (Web)</title>
+<style>
+:root {
+  --bg:#080610; --panel:#0f0c18; --card:#161222; --card-hi:#221c34;
+  --border:#372a58; --accent:#a855f7; --accent-hi:#c482ff; --accent-dim:#6e37af;
+  --spark:#ec48c8; --ok:#48dc82; --warn:#ffaa32; --bad:#ff5064;
+  --text:#eae4f8; --muted:#b4acd0; --info-bg:#20163a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-weight:600;overflow:hidden}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#6e5ba0a0;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#9a88c0}
+
+.app{display:flex;height:100vh}
+
+/* Sidebar */
+.sidebar{width:268px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.logo{padding:22px 18px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)}
+.logo-hex{width:52px;height:52px;flex-shrink:0}
+.logo-hex svg{width:100%;height:100%}
+.logo-text{display:flex;flex-direction:column}
+.logo-title{font-size:22px;font-weight:800;letter-spacing:.5px}
+.logo-sub{font-size:9px;font-weight:800;color:var(--accent-dim);letter-spacing:2px;margin-top:2px}
+.logo-accent{display:block;width:28px;height:2px;background:var(--accent);margin-top:4px}
+
+.nav{flex:1;overflow-y:auto;padding:8px}
+.nav-btn{display:flex;align-items:center;gap:14px;padding:12px 18px;margin:2px 0;border-radius:12px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:700;user-select:none;transition:background .08s}
+.nav-btn:hover{background:var(--card-hi);color:var(--text)}
+.nav-btn.active{background:rgba(168,85,247,.22);color:var(--text);position:relative;border:1px solid rgba(196,130,255,.35)}
+.nav-btn.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:4px;background:var(--accent);border-radius:2px}
+.nav-ico{font-size:16px;width:22px;text-align:center;color:var(--accent-dim)}
+.nav-btn.active .nav-ico{color:var(--accent)}
+
+.version{padding:10px;text-align:center;color:var(--muted);font-size:10px;border-top:1px solid var(--border);font-weight:700;letter-spacing:.5px}
+
+.main{flex:1;overflow-y:auto;padding:32px 40px 80px}
+
+.page{display:none}
+.page.active{display:block}
+
+h1.big{font-size:32px;font-weight:800;color:var(--accent);margin-bottom:18px;letter-spacing:-.5px}
+h2.sub{font-size:18px;font-weight:800;color:var(--accent);margin:26px 0 14px;letter-spacing:.2px}
+
+.info{background:linear-gradient(180deg,var(--info-bg),#18102c);border:1.5px solid rgba(196,130,255,.4);border-radius:18px;padding:22px 26px;margin-bottom:20px}
+.info-title{font-size:14px;font-weight:800;color:var(--accent);margin-bottom:8px}
+.info-body{font-size:14px;line-height:1.6;color:var(--text)}
+
+.warn-card{background:linear-gradient(180deg,#3a1f0f,#2a1408);border:1.5px solid rgba(255,170,50,.4);border-radius:18px;padding:18px 22px;margin-bottom:20px}
+.warn-card .info-title{color:var(--warn)}
+
+.grid{display:grid;gap:14px;margin-bottom:18px}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+@media (max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:1fr}}
+@media (max-width:640px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr}}
+
+/* SensorCard — matches desktop's BuildSensorRow card layout exactly */
+.sc{background:linear-gradient(180deg,var(--card),var(--card-hi));border-radius:18px;padding:24px 24px 20px;display:flex;flex-direction:column;min-height:220px}
+.sc-title{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:1.5px;margin-bottom:8px}
+.sc-val{font-family:"Segoe UI Variable Display","Segoe UI",sans-serif;font-size:30px;font-weight:800;line-height:1.1;margin-bottom:6px;letter-spacing:-.5px}
+.sc-sub1{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.35}
+.sc-sub2{font-size:13px;font-weight:600;color:var(--muted);line-height:1.45}
+
+.section{background:linear-gradient(180deg,var(--card),var(--card-hi));border-radius:18px;padding:22px 24px;margin-bottom:18px}
+.section h2{font-size:13px;font-weight:800;color:var(--accent);letter-spacing:1.5px;margin-bottom:14px}
+
+table{width:100%;border-collapse:collapse}
+th{background:var(--card-hi);color:var(--accent);font-size:11px;letter-spacing:1px;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid #2a2142;font-size:12.5px;font-weight:600;font-family:Consolas,monospace}
+tr:last-child td{border-bottom:none}
+
+.btn{background:var(--accent);color:var(--text);border:none;border-radius:14px;padding:13px 26px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:filter .08s;letter-spacing:.3px}
+.btn:hover{filter:brightness(1.15)}
+.btn:active{filter:brightness(.92)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:var(--card-hi);color:var(--text)}
+.btn.danger{background:var(--bad)}
+.btn.small{padding:8px 16px;font-size:12px}
+
+.toolbar{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.toolbar label{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.5px}
+
+select,input[type=number],input[type=text]{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:inherit;font-weight:700;font-size:13px}
+select:focus,input:focus{outline:none;border-color:var(--accent)}
+
+.pbar{background:var(--panel);border-radius:12px;height:24px;overflow:hidden;margin:14px 0;border:1px solid var(--border)}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-hi));width:0%;transition:width .15s}
+
+.chart{background:var(--card);border-radius:16px;padding:16px;margin-bottom:16px;height:340px;border:1px solid var(--border)}
+.chart canvas{width:100%;height:100%;display:block}
+.legend{display:flex;gap:18px;margin-top:10px;font-size:12px;color:var(--muted);font-weight:700;flex-wrap:wrap}
+.legend span{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:middle}
+
+.out{background:var(--card);border-radius:16px;padding:20px;font-family:"Cascadia Code",Consolas,monospace;font-size:12.5px;line-height:1.7;white-space:pre-wrap;max-height:680px;overflow-y:auto;margin-bottom:16px;font-weight:500;border:1px solid var(--border)}
+.out .acc{color:var(--accent);font-weight:800}
+.out .ok{color:var(--ok)}
+.out .warn{color:var(--warn)}
+.out .bad{color:var(--bad)}
+.out .muted{color:var(--muted)}
+
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #2a2142}
+.toggle-row:last-child{border-bottom:none}
+.toggle-meta{flex:1;padding-right:16px}
+.toggle-name{font-weight:800;font-size:14px;margin-bottom:3px}
+.toggle-desc{font-size:12px;color:var(--muted);font-weight:600;line-height:1.5}
+.switch{position:relative;width:44px;height:24px;background:var(--card-hi);border-radius:12px;cursor:pointer;transition:background .15s;flex-shrink:0;border:1px solid var(--border)}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:var(--muted);border-radius:50%;transition:left .15s,background .15s}
+.switch.on{background:rgba(168,85,247,.35);border-color:var(--accent)}
+.switch.on::after{left:22px;background:var(--accent)}
+
+.pill{display:inline-block;background:var(--card-hi);color:var(--accent);border:1px solid var(--accent-dim);padding:3px 10px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:1px;margin-left:8px;vertical-align:middle}
+.pill.warn{color:var(--warn);border-color:var(--warn)}
+.pill.ok{color:var(--ok);border-color:var(--ok)}
+.pill.bad{color:var(--bad);border-color:var(--bad)}
+
+.tabs{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.tab{padding:10px 18px;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;border-radius:10px 10px 0 0;border:1px solid transparent;border-bottom:none;letter-spacing:.3px}
+.tab:hover{color:var(--text);background:var(--card-hi)}
+.tab.active{color:var(--accent);background:var(--card);border-color:var(--border)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* Drive Health card sub-layout */
+.health-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+@media (max-width:900px){.health-grid{grid-template-columns:repeat(2,1fr)}}
+.mc{background:linear-gradient(180deg,var(--panel),var(--card));border-radius:14px;padding:18px 18px}
+.mc-title{font-size:11px;font-weight:800;color:var(--accent);letter-spacing:1.5px;margin-bottom:6px}
+.mc-val{font-family:"Segoe UI Variable Display",sans-serif;font-size:22px;font-weight:800;margin-bottom:4px;line-height:1.1}
+.mc-sub{font-size:12px;font-weight:600;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-hex">
+        <svg viewBox="-26 -26 52 52">
+          <polygon points="0,-22 19,-11 19,11 0,22 -19,11 -19,-11" fill="#161222" stroke="#a855f7" stroke-width="2.4"/>
+          <path d="M-7,7 Q-3,0 -3,-6 M0,9 Q1,0 1,-9 M7,7 Q3,0 4,-5" stroke="#a855f7" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <circle cx="1" cy="-10" r="2.5" fill="#ec48c8"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-title">LODEFORGE</div>
+        <div class="logo-sub">SYSTEM SUITE</div>
+        <span class="logo-accent"></span>
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="nav-btn" data-tab="storage"><span class="nav-ico">💾</span>Storage Suite</div>
+      <div class="nav-btn" data-tab="iso"><span class="nav-ico">📀</span>ISO → USB</div>
+      <div class="nav-btn active" data-tab="diag"><span class="nav-ico">🖥</span>Hardware Diagnostics</div>
+      <div class="nav-btn" data-tab="stress"><span class="nav-ico">🔥</span>Stress Test</div>
+      <div class="nav-btn" data-tab="upgrade"><span class="nav-ico">💡</span>Upgrade Advisor</div>
+      <div class="nav-btn" data-tab="perf"><span class="nav-ico">📊</span>Perf History</div>
+      <div class="nav-btn" data-tab="settings"><span class="nav-ico">⚙</span>Settings</div>
+    </div>
+    <div class="version">v2.0 · Web edition<br><a href="https://github.com/Goodsoftware4u/Lodeforge" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;font-weight:800">⬇  Get the .exe</a></div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ========= STORAGE SUITE (info-only) ========= -->
+    <section class="page" data-page="storage">
+      <h1 class="big">Storage Suite 💾</h1>
+      <div class="warn-card">
+        <div class="info-title">⚠ Not available in the web edition</div>
+        <div class="info-body">Sector-by-sector cloning, partition formatting, partition resize, and USB speed testing all need direct kernel / raw-disk access that a browser sandbox can't expose. Use <b>LodeForge.exe</b> on Windows — <a href="https://github.com/Goodsoftware4u/Lodeforge" target="_blank" rel="noopener" style="color:var(--accent);font-weight:800">github.com/Goodsoftware4u/Lodeforge</a>. Below: full breakdown of what each tab does in the desktop app.</div>
+      </div>
+      <div class="tabs">
+        <div class="tab active" data-storagetab="clone">💾 Clone</div>
+        <div class="tab" data-storagetab="format">🗂 Format</div>
+        <div class="tab" data-storagetab="resize">📐 Resize</div>
+        <div class="tab" data-storagetab="speed">⚡ USB Speed</div>
+      </div>
+
+      <div class="tab-pane active" data-storagepane="clone">
+        <div class="info">
+          <div class="info-title">Drive Cloning ✨</div>
+          <div class="info-body">Makes a perfect byte-for-byte twin of one drive onto another — your whole OS, files, partitions, the works. Ideal for upgrading to a new SSD, cloning game installs, or rescuing data from a drive on its way out. The destination drive gets wiped clean first.</div>
+        </div>
+        <div class="section">
+          <h2>FULL DESKTOP FUNCTIONALITY</h2>
+          <ul style="line-height:2;margin-left:20px">
+            <li><b>Source drive</b> picker (drop-down with every physical drive: model + capacity + interface)</li>
+            <li><b>Destination drive</b> picker — separate dropdown, defaults to the second drive</li>
+            <li><b>🔄 Refresh drive list</b> button — re-enumerates Win32_DiskDrive in case you plugged in a USB</li>
+            <li><b>PS4 mode</b> checkbox — extended retries for encrypted / unusual drives (works for PS4 raw byte clones, but can't decrypt — the key is fused to the console's APU)</li>
+            <li><b>Dead-drive recovery</b> checkbox — skip bad sectors instead of stopping the clone (settable as default in Settings → Dead Drive Recovery)</li>
+            <li><b>Final confirmation prompt</b> — shows destination label "ERASE AND OVERWRITE: &lt;label&gt;" with Yes/No</li>
+            <li><b>Live progress bar</b> with rounded corners and percentage fill</li>
+            <li><b>▶ Start Clone / ✕ Cancel</b> buttons — Cancel flips the cancellation token cooperatively</li>
+            <li><b>End-of-run message</b>: "✓ Done — X.XX GB copied, N bad sectors skipped" (or "✗ &lt;error&gt;")</li>
+            <li>Uses <code>CreateFile</code> with <code>FILE_FLAG_NO_BUFFERING</code> for raw physical disk access; reads/writes 1 MB chunks</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tab-pane" data-storagepane="format">
+        <div class="info">
+          <div class="info-title">Drive Formatter 🧽</div>
+          <div class="info-body">Wipes a drive clean and lays down a fresh file system. NTFS for Windows, exFAT for cross-platform (Mac / Linux / consoles), or FAT32 for old hardware.</div>
+        </div>
+        <div class="section">
+          <h2>FULL DESKTOP FUNCTIONALITY</h2>
+          <ul style="line-height:2;margin-left:20px">
+            <li><b>Drive letter</b> picker (every ready logical drive)</li>
+            <li><b>File system</b>: NTFS (Windows) / exFAT (cross-platform) / FAT32 (old devices)</li>
+            <li><b>Partition style</b>: GPT (modern, &gt;2 TB) / MBR (legacy BIOS)</li>
+            <li><b>Volume label</b> text field — defaults to "DATA"</li>
+            <li><b>Quick format</b> checkbox (default on)</li>
+            <li><b>Final confirmation prompt</b>: "ERASE &lt;label&gt;? As &lt;FS&gt; labelled '&lt;label&gt;'. All existing data will be lost. This cannot be undone."</li>
+            <li>Runs <code>diskpart</code> to convert partition style, then <code>format.com</code> with the file-system + label flags</li>
+            <li>Refreshes the letter list after success</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tab-pane" data-storagepane="resize">
+        <div class="info">
+          <div class="info-title">Grow Your Partition 📐</div>
+          <div class="info-body">Just cloned to a bigger drive but it still shows the old size? This stretches the selected partition into all the unused space sitting on the same disk. Non-destructive — your files stay exactly where they are.</div>
+        </div>
+        <div class="section">
+          <h2>FULL DESKTOP FUNCTIONALITY</h2>
+          <ul style="line-height:2;margin-left:20px">
+            <li><b>Partition</b> picker — every ready logical drive</li>
+            <li>Runs <code>diskpart</code> with: <code>select volume X</code> → <code>extend</code></li>
+            <li>Pulls in all contiguous free space on the same physical disk</li>
+            <li>Same disk only — not a partition mover (use third-party tools for cross-disk moves)</li>
+            <li>Refreshes the letter list with the new size after success</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tab-pane" data-storagepane="speed">
+        <div class="info">
+          <div class="info-title">Speed Check ⚡</div>
+          <div class="info-body">Writes a test file to your drive, reads it back, reports real-world write + read MB/s. Catches USB ports running at 2.0 speeds when they should be 3.0, or flash drives whose NAND has worn out.</div>
+        </div>
+        <div class="section">
+          <h2>FULL DESKTOP FUNCTIONALITY</h2>
+          <ul style="line-height:2;margin-left:20px">
+            <li><b>Drive</b> picker (every ready logical drive)</li>
+            <li><b>Test size</b>: 128 MB (quick) / 512 MB (balanced) / 1024 MB (accurate) / 2048 MB (thorough)</li>
+            <li>Sequential write of N MB to a temp file using buffered I/O</li>
+            <li>Then sequential read of the same file</li>
+            <li>Reports: <code>Write speed: X MB/s</code>, <code>Read speed: Y MB/s</code>, <code>Average: Z MB/s</code></li>
+            <li><b>Speed-class grading:</b>
+              <span class="pill ok">≥400 MB/s — USB 3.2 Gen2</span>
+              <span class="pill">≥120 MB/s — USB 3.0/3.1</span>
+              <span class="pill warn">≥25 MB/s — USB 2.0</span>
+              <span class="pill bad">&lt;25 MB/s — degraded / replace</span>
+            </li>
+            <li>Cleans up the temp file after the test</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========= ISO → USB (info-only) ========= -->
+    <section class="page" data-page="iso">
+      <h1 class="big">Make a Bootable USB 🚀</h1>
+      <div class="warn-card">
+        <div class="info-title">⚠ Not available in the web edition</div>
+        <div class="info-body">Writing raw bytes to a physical USB stick requires kernel-level disk access. Use <b>LodeForge.exe</b> (or Rufus) on Windows — <a href="https://github.com/Goodsoftware4u/Lodeforge" target="_blank" rel="noopener" style="color:var(--accent);font-weight:800">github.com/Goodsoftware4u/Lodeforge</a>.</div>
+      </div>
+      <div class="info">
+        <div class="info-title">How it works</div>
+        <div class="info-body">Turns any ISO file into a bootable USB stick — reinstall Linux (Ubuntu / Mint / Fedora), spin up a recovery tool, or repair a dead PC. The USB gets fully wiped first, then the ISO is written sector-by-sector.</div>
+      </div>
+      <div class="section">
+        <h2>FULL DESKTOP FUNCTIONALITY  <span class="pill">Rufus-style</span></h2>
+        <ul style="line-height:2;margin-left:20px">
+          <li><b>Step 1 — Browse for ISO</b>  →  opens an OpenFileDialog filtered to *.iso. Shows filename + size after select.</li>
+          <li><b>Step 2 — Target USB drive</b>  →  drive picker with full model + capacity labels (will be erased)</li>
+          <li><b>🔄 Refresh drive list</b>  →  re-enumerates physical drives so a freshly-plugged USB shows up</li>
+          <li><b>Step 3 — Partition scheme</b>  →  <code>GPT (modern UEFI)</code> or <code>MBR (legacy BIOS)</code></li>
+          <li><b>Target system</b>  →  <code>UEFI (modern)</code> / <code>BIOS or UEFI</code> / <code>BIOS (legacy)</code></li>
+          <li><b>Volume label</b>  →  text field, defaults to <code>LODEFORGE</code></li>
+          <li><b>Verify after write</b>  →  checkbox: after write completes, re-reads every byte back from the USB and compares to the source ISO; reports the exact byte offset if anything mismatches</li>
+          <li><b>Final confirmation prompt</b>  →  "ERASE AND WRITE ISO TO: &lt;drive label&gt;. All existing data will be lost. This cannot be undone."</li>
+          <li><b>Split progress bar</b>  →  0–50% during write, 50–100% during verify (if enabled)</li>
+          <li><b>End-of-run message</b>  →  "✓ Done — XX MB written + verified. USB is bootable."</li>
+          <li>Uses <code>CreateFile</code> on <code>\\.\PhysicalDriveN</code> with <code>FILE_FLAG_NO_BUFFERING</code> for raw sector writes; cancellable mid-flight</li>
+          <li>For ISOs &gt; 4 GB (Windows installer images), recommended to also try Rufus directly — its NTFS+UEFI shim isn't replicated here</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ========= HARDWARE DIAGNOSTICS  (1:1 layout match) ========= -->
+    <section class="page active" data-page="diag">
+      <h1 class="big">Hardware Diagnostics 🖥</h1>
+
+      <!-- 4-up sensor row mirrors desktop BuildSensorRow exactly -->
+      <div class="grid grid-4" style="margin-bottom:14px">
+        <div class="sc">
+          <div class="sc-title">CPU</div>
+          <div class="sc-val" id="d-cpu-pct" style="color:var(--text)">—%</div>
+          <div class="sc-sub1" id="d-cpu-name">Detecting…</div>
+          <div class="sc-sub2" id="d-cpu-info">— cores / — threads</div>
+        </div>
+        <div class="sc">
+          <div class="sc-title">RAM</div>
+          <div class="sc-val" id="d-ram-pct" style="color:var(--text)">—%</div>
+          <div class="sc-sub1" id="d-ram-info">— MB free / — MB</div>
+          <div class="sc-sub2"></div>
+        </div>
+        <div class="sc">
+          <div class="sc-title">CPU TEMP</div>
+          <div class="sc-val" id="d-cpu-temp" style="color:var(--muted)">N/A</div>
+          <div class="sc-sub1">Live ACPI sensor</div>
+          <div class="sc-sub2" id="d-cpu-temp-mm">no sensor (browser sandbox)</div>
+        </div>
+        <div class="sc">
+          <div class="sc-title">GPU</div>
+          <div class="sc-val" id="d-gpu-pct" style="color:var(--text);font-size:18px;line-height:1.3">—</div>
+          <div class="sc-sub1" id="d-gpu-name">Detecting…</div>
+          <div class="sc-sub2" id="d-gpu-info">— GB VRAM • —</div>
+        </div>
+      </div>
+
+      <!-- Motherboard & BIOS card -->
+      <div class="section">
+        <h2>MOTHERBOARD &amp; BIOS</h2>
+        <div id="d-mobo" style="font-family:Consolas,monospace;font-size:13px;line-height:1.7;color:var(--muted);font-weight:600;white-space:pre-wrap">Browser sandbox blocks WMI access to motherboard / BIOS info.
+Run desktop LodeForge.exe to see:
+  Board:   &lt;vendor&gt;  &lt;model&gt;  (rev …)
+  BIOS:    &lt;vendor&gt;  &lt;version&gt;  (&lt;release date&gt;)   ⚠ flagged if &gt; 3 years old</div>
+      </div>
+
+      <!-- Physical drives table — 10 cols same as desktop -->
+      <div class="section">
+        <h2>PHYSICAL DRIVES</h2>
+        <table>
+          <thead><tr>
+            <th>#</th><th>Model</th><th>Firmware</th><th>Size GB</th><th>Iface</th>
+            <th>Temp</th><th>Life %</th><th>Hours</th><th>Cycles</th><th>Health</th>
+          </tr></thead>
+          <tbody id="d-drives">
+            <tr><td colspan="10" style="color:var(--muted);text-align:center;padding:18px">Browser sandbox blocks raw disk enumeration. Desktop reads <code>Win32_DiskDrive</code> + <code>MSStorageDriver_ATAPISmartData</code> + <code>MSFT_PhysicalDisk</code> in parallel.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Logical volumes table — 7 cols same as desktop -->
+      <div class="section">
+        <h2>LOGICAL VOLUMES</h2>
+        <table>
+          <thead><tr>
+            <th>Drive</th><th>Label</th><th>FS</th><th>Type</th>
+            <th>Total GB</th><th>Free GB</th><th>Used %</th>
+          </tr></thead>
+          <tbody id="d-volumes">
+            <tr><td colspan="7" style="color:var(--muted);text-align:center;padding:18px">Browser only sees its origin's storage quota — see below.</td></tr>
+            <tr id="d-vol-quota"><td>—</td><td>Origin</td><td>—</td><td>Sandbox</td><td id="d-vol-total">—</td><td id="d-vol-free">—</td><td id="d-vol-used">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Drive Health card — 4-up mini grid same as desktop -->
+      <div class="section">
+        <h2>DRIVE HEALTH</h2>
+        <div id="d-health-name" style="font-family:Consolas,monospace;font-size:13px;color:var(--muted);font-weight:600">(no drive — browser sandbox blocks SMART access)</div>
+        <div class="health-grid">
+          <div class="mc"><div class="mc-title">HEALTH</div><div class="mc-val" id="d-h-health" style="color:var(--muted)">—</div><div class="mc-sub" id="d-h-pct">—</div></div>
+          <div class="mc"><div class="mc-title">TEMPERATURE</div><div class="mc-val" id="d-h-temp" style="color:var(--muted)">—</div><div class="mc-sub">idle</div></div>
+          <div class="mc"><div class="mc-title">POWER ON</div><div class="mc-val" id="d-h-hours" style="color:var(--muted)">—</div><div class="mc-sub">hours</div></div>
+          <div class="mc"><div class="mc-title">POWER CYCLES</div><div class="mc-val" id="d-h-cycles" style="color:var(--muted)">—</div><div class="mc-sub">starts</div></div>
+        </div>
+        <div id="d-h-details" style="font-family:Consolas,monospace;font-size:12px;color:var(--muted);font-weight:600;margin-top:14px;line-height:1.7">Desktop shows: Reallocated sectors · Pending sectors · Life left · ⚠ FAILURE PREDICTED BY DRIVE</div>
+        <div class="toolbar" style="margin-top:14px">
+          <button class="btn ghost small" id="d-refresh">🔄  Refresh All</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========= STRESS TEST  (1:1 layout match) ========= -->
+    <section class="page" data-page="stress">
+      <h1 class="big">Stress Test &amp; Benchmark 🔥</h1>
+      <div class="info">
+        <div class="info-title">How it works</div>
+        <div class="info-body">Pushes every available browser thread to 100% with a tight math loop AND a 256 MB RAM thrash (each worker holds a 32 MB Float64Array and reads/writes random offsets — same workout pattern as the desktop). 5 presets, live progress, cancel any time. Reports a benchmark score (ops/sec across all threads), a 1–10 silicon rating from per-thread throughput, and a thermal-pressure check derived from score variance over the run. Desktop adds real CPU temperature sensing via ACPI — flags throttle if the CPU sags under load or hits 85 °C+, with the silicon rating losing 1.5 points if throttling is detected.</div>
+      </div>
+
+      <div style="margin-bottom:14px;font-weight:700;font-size:13px">Test preset:</div>
+      <div class="toolbar">
+        <select id="s-preset" style="min-width:380px">
+          <option value="30">⚡ Quick — 30 seconds (smoke test)</option>
+          <option value="120" selected>🔥 Standard — 2 minutes (recommended)</option>
+          <option value="300">💪 Extended — 5 minutes (thermal check)</option>
+          <option value="600">🛠 Endurance — 10 minutes (stability check)</option>
+          <option value="1800">🏆 Max burn — 30 minutes (deep stability)</option>
+        </select>
+      </div>
+
+      <div class="pbar"><div class="pbar-fill" id="s-bar"></div></div>
+
+      <!-- 3 result cards — matches desktop's 3-column ResultCard row -->
+      <div class="grid grid-3" style="margin-bottom:14px">
+        <div class="sc">
+          <div class="sc-title">BENCHMARK SCORE</div>
+          <div class="sc-val" id="s-score" style="color:var(--accent)">—</div>
+          <div class="sc-sub1" id="s-score-sub" style="color:var(--muted)">ops/sec across all threads</div>
+        </div>
+        <div class="sc">
+          <div class="sc-title">SILICON RATING</div>
+          <div class="sc-val" id="s-rating">—</div>
+          <div class="sc-sub1" id="s-rating-sub" style="color:var(--muted)">1–10 by per-thread throughput</div>
+        </div>
+        <div class="sc">
+          <div class="sc-title">THERMAL RESULT</div>
+          <div class="sc-val" id="s-thermal" style="font-size:22px">—</div>
+          <div class="sc-sub1" id="s-thermal-sub" style="color:var(--muted)">desktop: peak temp · web: variance proxy</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn" id="s-start">▶  Start Stress Test</button>
+        <button class="btn danger" id="s-stop" disabled>✕  Cancel</button>
+        <span id="s-status" style="color:var(--muted);font-size:12px;font-weight:700;margin-left:10px">Ready.</span>
+      </div>
+    </section>
+
+    <!-- ========= UPGRADE ADVISOR  (1:1 layout match) ========= -->
+    <section class="page" data-page="upgrade">
+      <h1 class="big">Upgrade Advisor 💡</h1>
+      <div class="info">
+        <div class="info-title">How it works</div>
+        <div class="info-body">Sniffs out exactly what you're running — desktop tower, laptop, or handheld gaming PC — and tailors the advice. Set a budget cap and target resolution to filter recommendations. Handhelds get M.2 SSD picks (2230 / 2242) and PTM7950 repaste tips. Laptops get RAM SODIMM + eGPU options. Desktops get the full per-socket CPU + GPU path. The web edition auto-detects your GPU from the WebGL renderer string and benchmarks your CPU live for the verdict.</div>
+      </div>
+
+      <!-- Filters row -->
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px">Filters</div>
+      <div class="toolbar">
+        <label>Max budget:</label>
+        <select id="u-budget" style="min-width:170px">
+          <option value="0" selected>No limit</option>
+          <option value="100">Under $100</option>
+          <option value="200">Under $200</option>
+          <option value="400">Under $400</option>
+          <option value="600">Under $600</option>
+          <option value="1000">Under $1,000</option>
+          <option value="1500">Under $1,500</option>
+          <option value="2000">Under $2,000</option>
+        </select>
+        <label style="margin-left:18px">Target resolution:</label>
+        <select id="u-res" style="min-width:140px">
+          <option value="Any" selected>Any</option>
+          <option value="720p">720p</option>
+          <option value="900p">900p</option>
+          <option value="1080p">1080p</option>
+          <option value="1440p">1440p</option>
+          <option value="4K">4K</option>
+        </select>
+      </div>
+
+      <!-- Big analysis output box (auto-populates on tab open) -->
+      <div class="out" id="u-out">Auto-analysis runs the moment you open this tab — detecting GPU from WebGL and benchmarking CPU for 5 seconds. Re-run any time with the button below if you change filters.</div>
+
+      <div class="toolbar">
+        <button class="btn" id="u-analyze">🔄  Re-run analysis</button>
+        <span id="u-bench-status" style="color:var(--muted);font-size:12px;font-weight:700;margin-left:10px">Auto-running…</span>
+      </div>
+      <div class="pbar" id="u-bench-bar-wrap" style="display:none;max-width:520px"><div class="pbar-fill" id="u-bench-bar"></div></div>
+
+      <!-- Can my PC run it -->
+      <h2 class="sub">Can my PC run it? 🎮</h2>
+      <div class="info">
+        <div class="info-title">Quick reality check</div>
+        <div class="info-body">Uses your auto-detected GPU + benchmarked CPU. Per-game weighting: <i>Roblox / Minecraft / CS2 / Valorant / LoL / Dota / Hearthstone / Stardew / Hades / Rocket League</i> = ultra-light × 0.18, <i>Fortnite / Apex / Overwatch / GTA V</i> = light × 0.35, default = moderate × 1.00, <i>Cyberpunk 2077 / MS Flight Sim / Wukong / Alan Wake 2</i> = heavy × 1.35. Verdict scale: <span class="pill ok">COMFORT</span> <span class="pill ok">YES</span> <span class="pill warn">MARGINAL</span> <span class="pill warn">BELOW</span> <span class="pill bad">NO</span>. CPU bottleneck flagged separately.</div>
+      </div>
+      <div class="toolbar">
+        <label>Game:</label>
+        <input type="text" id="r-game" placeholder="Cyberpunk 2077" style="min-width:240px">
+        <label style="margin-left:14px">Target:</label>
+        <select id="r-target">
+          <option>720p   30 fps</option>
+          <option>720p   60 fps</option>
+          <option>720p   120 fps</option>
+          <option>720p   180+ fps</option>
+          <option>900p   60 fps</option>
+          <option>900p   120 fps</option>
+          <option>900p   180+ fps</option>
+          <option>1080p  30 fps</option>
+          <option selected>1080p  60 fps</option>
+          <option>1080p  120 fps</option>
+          <option>1080p  180+ fps</option>
+          <option>1440p  60 fps</option>
+          <option>1440p  120 fps</option>
+          <option>1440p  180+ fps</option>
+          <option>4K     60 fps</option>
+          <option>4K     120 fps</option>
+          <option>4K     180+ fps</option>
+        </select>
+        <button class="btn" id="r-check">🎮  Check compatibility</button>
+      </div>
+      <div class="out" id="r-out" style="max-height:340px">Run "Analyze my system" first to populate your hardware, then pick a game and target.</div>
+    </section>
+
+    <!-- ========= PERF HISTORY ========= -->
+    <section class="page" data-page="perf">
+      <h1 class="big">Performance History 📊</h1>
+      <div class="info">
+        <div class="info-title">How it works</div>
+        <div class="info-body">Quietly logs your CPU, RAM, and temps every 2 seconds in the background. Great for catching sneaky stuff — temp spikes while gaming, memory leaks that creep up over hours, or just seeing how your system behaves over time. The web edition charts browser FPS + JS heap every ½ s as a stand-in (240-sample rolling window). Desktop logs the real sensors to <code>%LOCALAPPDATA%\LodeForge\perf.csv</code>.</div>
+      </div>
+      <div class="chart"><canvas id="p-chart"></canvas></div>
+      <div class="legend">
+        <div><span style="background:var(--accent)"></span>FPS</div>
+        <div><span style="background:var(--ok)"></span>Heap MB</div>
+        <div style="color:var(--muted);margin-left:20px">desktop chart adds: <span style="background:var(--accent);display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px"></span>CPU% <span style="background:var(--ok);display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px"></span>RAM% <span style="background:var(--warn);display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px"></span>Temp °C</div>
+      </div>
+      <div id="p-stats" style="font-family:Consolas,monospace;color:var(--muted);margin-top:12px;font-weight:600"></div>
+      <div class="toolbar" style="margin-top:18px">
+        <button class="btn ghost" id="p-refresh">🔄  Refresh</button>
+        <button class="btn" id="p-export">💾  Export CSV</button>
+        <button class="btn ghost" id="p-clear">🗑  Clear Log</button>
+      </div>
+      <div class="section" style="margin-top:18px">
+        <h2>FULL DESKTOP FUNCTIONALITY</h2>
+        <ul style="line-height:2;margin-left:20px">
+          <li><b>240-sample rolling window</b> — 8 minutes of history at 2 s tick rate</li>
+          <li><b>3 series</b> — CPU% (purple), RAM% (green), Temp °C clamped 0–100 (amber)</li>
+          <li><b>Auto-refresh every 5 s</b> — chart redraws from the latest CSV slice</li>
+          <li><b>Stats line</b>: <code>Samples: N · Avg CPU: X% · Max CPU: Y% · Avg RAM: Z% · Window: HH:MM–HH:MM</code></li>
+          <li><b>🔄 Refresh</b> — re-reads <code>perf.csv</code> on demand</li>
+          <li><b>💾 Export CSV</b> — opens a Save dialog and copies <code>perf.csv</code> wherever you want</li>
+          <li><b>🗑 Clear Log</b> — confirms first, then truncates <code>perf.csv</code> back to its header</li>
+          <li>The CSV gets written every 2 s by a background timer in MainForm: <code>ts,cpu,ram,temp\n</code> rows — runs whether the History tab is open or not</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ========= SETTINGS ========= -->
+    <section class="page" data-page="settings">
+      <h1 class="big">Settings ⚙</h1>
+      <div class="warn-card">
+        <div class="info-title">⚠ Web edition is read-only</div>
+        <div class="info-body">All these toggles need OS-level access (system tray, powercfg, always-on-top windows, TCP socket clients, embedded HTTP server) that a sandboxed browser tab can't do. Settings auto-save on flip in the desktop — no Save button. Below: full breakdown of what each toggle does.</div>
+      </div>
+      <div class="section">
+        <h2>DESKTOP SETTINGS  <span class="pill">preview</span></h2>
+        <div id="settings-list"></div>
+      </div>
+
+      <div class="section">
+        <h2>🥷 STEALTH MODE — HOW IT WORKS</h2>
+        <div style="font-size:13px;line-height:1.7;color:var(--text)">On flip: registers a <code>NotifyIcon</code> with a context menu (<i>Open LodeForge / Exit</i>), hides the main form (<code>ShowInTaskbar = false</code>, <code>WindowState = Minimized</code>), and unregisters from the taskbar. Double-click the tray icon to restore. Survives between launches — re-applied at startup.</div>
+      </div>
+
+      <div class="section">
+        <h2>🔋 LAPTOP POWER GUARD — HOW IT WORKS</h2>
+        <div style="font-size:13px;line-height:1.7;color:var(--text)">Polls <code>SystemInformation.PowerStatus</code> every 30 seconds. When it sees <code>PowerLineStatus.Offline AND BatteryLifePercent &lt; 20%</code>, it fires <code>powercfg /setactive a1841308-3541-4fab-bc81-f71556f20b4a</code> (the Power Saver scheme GUID). One-shot per AC-disconnect — won't keep flipping if you bounce the toggle.</div>
+      </div>
+
+      <div class="section">
+        <h2>🌡 PERFORMANCE OVERLAY — HOW IT WORKS</h2>
+        <div style="font-size:13px;line-height:1.7;color:var(--text)">Spawns a borderless 240×78 always-on-top window at (20, 20) with rounded corners, 92% opacity, and Cascadia Mono text. Updates every 1.5 s with <code>CPU XX% TEMP XX°C / GPU XX% RAM XX%</code>. <b style="color:var(--accent)">Black background, 2 px purple outline, white text</b> for high contrast against any wallpaper or game. Closes cleanly on flip-off — no stale window.</div>
+      </div>
+
+      <div class="section">
+        <h2>💀 DEAD DRIVE RECOVERY — HOW IT WORKS</h2>
+        <div style="font-size:13px;line-height:1.7;color:var(--text)">Sets the <i>"Dead-drive recovery — skip bad sectors instead of stopping"</i> checkbox in the Storage Suite → Clone tab to be ON by default for new sessions. Existing Clone tab needs reopening to pick up. No actual behavior change to clones already in flight.</div>
+      </div>
+
+      <div class="section">
+        <h2>🌈 RGB STATUS SYNC — HOW IT WORKS</h2>
+        <div style="font-size:13px;line-height:1.7;color:var(--text)">Implements the OpenRGB SDK as a TCP client. Connects to <code>127.0.0.1:6742</code> (silent if OpenRGB isn't running), sends a <code>NET_SET_CLIENT_NAME = "LodeForge"</code> packet, queries <code>NET_REQUEST_CONTROLLER_COUNT</code>, then ticks every 3 s: reads CPU temp, picks a color (cyan ≤ 0 unknown, green ≤ 60 °C, amber 60–80, red &gt; 80), and broadcasts <code>NET_RGBCONTROLLER_UPDATESINGLELED</code> to every controller's first LED.</div>
+      </div>
+
+      <div class="section">
+        <h2>📱 PHONE DASHBOARD — HOW IT WORKS</h2>
+        <div style="font-size:13px;line-height:1.7;color:var(--text)">When the toggle's on, LodeForge starts an embedded <code>HttpListener</code> on port 8765, runs <code>netsh advfirewall firewall add rule</code> to open the port (one-time, on first start), and serves a live dashboard at <code style="color:var(--accent)">http://&lt;your-PC-LAN-IP&gt;:8765/</code>. Any device on the same Wi-Fi can visit that URL — no app install.</div>
+        <div style="margin-top:12px;font-size:13px;line-height:1.7;color:var(--muted)">Endpoints: <code>/</code> (HTML dashboard) · <code>/api/live</code> (JSON: <code>cpu_pct, ram_pct, gpu_pct, cpu_temp, ram_total_mb, ram_avail_mb</code>, polled every 1.5 s) · <code>/api/system</code> (JSON: <code>host, cpu_name, cpu_cores, cpu_threads, gpu_name, board</code>)</div>
+      </div>
+
+      <div class="section">
+        <h2>DATA THE DESKTOP APP WRITES</h2>
+        <table>
+          <thead><tr><th>Path</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>%LOCALAPPDATA%\LodeForge\config.json</code></td><td>All toggles serialized as JSON, auto-saved on every flip</td></tr>
+            <tr><td><code>%LOCALAPPDATA%\LodeForge\perf.csv</code></td><td>Rolling perf history — <code>ts,cpu,ram,temp</code> rows every 2 s</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:14px;color:var(--muted);font-size:12px;font-weight:600">Nothing is phoned home. Settings, logs, and the Phone Dashboard all stay on your LAN.</p>
+      </div>
+
+      <div class="section">
+        <h2>F11 — FULLSCREEN TOGGLE</h2>
+        <div style="font-size:13px;line-height:1.7;color:var(--text)">Not a toggle in the Settings panel, but worth noting: in the desktop app, <code>F11</code> swaps between borderless-fullscreen-maximized (covers the Windows taskbar + hides the title bar) and a normal sizable bordered window. Useful escape hatch if you need the taskbar back.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────────────────
+// Tabs
+// ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelector('[data-page="'+b.dataset.tab+'"]').classList.add('active');
+    // Auto-run upgrade analysis the first time the user opens the tab.
+    if (b.dataset.tab === 'upgrade' && !window.__upgradeAnalyzed) {
+      window.__upgradeAnalyzed = true;
+      const btn = document.getElementById('u-analyze');
+      if (btn) btn.click();
+    }
+  });
+});
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelector('[data-storagepane="'+t.dataset.storagetab+'"]').classList.add('active');
+  });
+});
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtBytes(b){ return (b/1e9).toFixed(1)+' GB'; }
+function fmtMb(b){ return (b/1e6).toFixed(0)+' MB'; }
+
+// ──────────────────────────────────────────────────────────────────────
+// GPU + CPU PassMark databases  (subset of desktop's GpuBench/CpuBench)
+// Each GPU: [renderName, classLabel, [upgrades], passmarkG3D]
+// Each CPU: [name, passmarkCpuMark]
+// ──────────────────────────────────────────────────────────────────────
+const GPU_DB = [
+  ['RTX 5090', 'Halo (2025)', ["You're on the fastest GPU money buys. Hold."], 38500],
+  ['RTX 5080', 'High-end (2025)', ['RTX 5090  ~$2,000'], 28200],
+  ['RTX 5070 Ti', 'Upper-mid (2025)', ['RTX 5080  ~$1,000','RTX 5090  ~$2,000'], 24500],
+  ['RTX 5070', 'Mid (2025)', ['RTX 5070 Ti  ~$750','RTX 5080  ~$1,000'], 19800],
+  ['RTX 5060 Ti', 'Entry-mid (2025)', ['RTX 5070  ~$550','RX 9070 XT  ~$600'], 16000],
+  ['RTX 5060', 'Entry (2025)', ['RTX 5060 Ti  ~$400','RTX 5070  ~$550'], 14000],
+  ['RTX 4090', 'Halo (2022)', ['RTX 5090  ~$2,000'], 38800],
+  ['RTX 4080 Super', 'High-end (2024)', ['RTX 5080  ~$1,000','RTX 5090  ~$2,000'], 30100],
+  ['RTX 4080', 'High-end (2022)', ['RTX 5080  ~$1,000','RTX 4090  ~$1,800 used'], 28400],
+  ['RTX 4070 Ti Super', 'Upper-mid (2024)', ['RTX 5070 Ti  ~$750','RTX 5080  ~$1,000'], 26200],
+  ['RTX 4070 Ti', 'Upper-mid (2023)', ['RTX 4070 Ti Super  ~$800','RTX 4080 Super  ~$1,000'], 23900],
+  ['RTX 4070 Super', 'Upper-mid (2024)', ['RTX 4070 Ti Super  ~$800','RTX 5070  ~$550'], 22600],
+  ['RTX 4070', 'Upper-mid (2023)', ['RTX 4070 Super  ~$600','RTX 5070  ~$550'], 19500],
+  ['RTX 4060 Ti', 'Entry-mid (2023)', ['RTX 4070  ~$550','RX 7800 XT  ~$480'], 16200],
+  ['RTX 4060', 'Entry (2023)', ['RTX 4060 Ti 16GB  ~$450','RTX 4070  ~$550'], 13900],
+  ['RTX 3090 Ti', 'Halo (2022)', ['RTX 4080 Super  ~$1,000','RTX 5080  ~$1,000'], 27300],
+  ['RTX 3090', 'High-end (2020)', ['RTX 4080 Super  ~$1,000','RTX 5080  ~$1,000'], 25500],
+  ['RTX 3080 Ti', 'High-end (2021)', ['RTX 4070 Ti Super  ~$800','RTX 4080 Super  ~$1,000'], 25000],
+  ['RTX 3080', 'High-end (2020)', ['RTX 4070 Super  ~$600','RTX 4070 Ti Super  ~$800'], 22600],
+  ['RTX 3070 Ti', 'Upper-mid (2021)', ['RTX 4070  ~$550','RTX 4070 Super  ~$600'], 20800],
+  ['RTX 3070', 'Upper-mid (2020)', ['RTX 4070  ~$550','RX 7800 XT  ~$480'], 19400],
+  ['RTX 3060 Ti', 'Mid (2020)', ['RTX 4060 Ti 16GB  ~$450','RTX 4070  ~$550'], 17400],
+  ['RTX 3060', 'Mid (2021)', ['RTX 4060 Ti  ~$400','RX 7700 XT  ~$400'], 13600],
+  ['RTX 3050', 'Entry (2022)', ['RTX 4060  ~$290','RX 7600  ~$260','Intel Arc B580  ~$250'], 9300],
+  ['RTX 2080 Ti', 'Halo (2018)', ['RTX 4070 Super  ~$600','RTX 5070  ~$550'], 18900],
+  ['RTX 2080 Super', 'High-end (2019)', ['RTX 4070  ~$550','RX 7800 XT  ~$480'], 17400],
+  ['RTX 2080', 'High-end (2018)', ['RTX 4070  ~$550','RX 7800 XT  ~$480'], 16100],
+  ['RTX 2070 Super', 'Upper-mid (2019)', ['RTX 4060 Ti 16GB  ~$450','RTX 4070  ~$550'], 16500],
+  ['RTX 2070', 'Upper-mid (2018)', ['RTX 4060 Ti  ~$400','RX 7700 XT  ~$400'], 14800],
+  ['RTX 2060 Super', 'Mid (2019)', ['RTX 4060  ~$290','RX 7600  ~$260'], 13900],
+  ['RTX 2060', 'Mid (2019)', ['RTX 4060  ~$290','RX 7600  ~$260'], 12000],
+  ['GTX 1660 Ti', 'Entry (2019)', ['RTX 4060  ~$290','RX 7600  ~$260'], 11200],
+  ['GTX 1660 Super', 'Entry (2019)', ['RTX 4060  ~$290','RX 7600  ~$260'], 11000],
+  ['GTX 1660', 'Entry (2019)', ['RTX 4060  ~$290','RX 7600  ~$260'], 10600],
+  ['GTX 1650 Super', 'Budget (2019)', ['RTX 3050 6GB  ~$180','RX 6600  ~$200'], 8400],
+  ['GTX 1650', 'Budget (2019)', ['RTX 3050 6GB  ~$180','RX 6600  ~$200'], 7300],
+  ['GTX 1080 Ti', 'Upper-mid (2017)', ['RTX 4060 Ti 16GB  ~$450','RTX 4070  ~$550'], 14700],
+  ['GTX 1080', 'High (2016)', ['RTX 4060 Ti  ~$400','RX 7700 XT  ~$400'], 12100],
+  ['GTX 1070 Ti', 'Mid (2017)', ['RTX 4060  ~$290','RX 7600  ~$260'], 12400],
+  ['GTX 1070', 'Mid (2016)', ['RTX 4060  ~$290','RTX 3060 12GB  ~$240 used'], 11200],
+  ['GTX 1060', 'Entry (2016)', ['RTX 3050 6GB  ~$180','RX 6600  ~$200'], 8200],
+  ['GTX 1050 Ti', 'Budget (2016)', ['RTX 3050 6GB  ~$180','Intel Arc A580  ~$170'], 5500],
+  ['GTX 1050', 'Budget (2016)', ['RTX 3050 6GB  ~$180'], 4400],
+  ['GTX 980 Ti', 'Halo (2015)', ['RTX 4060  ~$290','RX 7600  ~$260'], 9800],
+  ['GTX 980', 'High (2014)', ['RTX 3060 12GB  ~$240 used','RTX 4060  ~$290'], 7800],
+  ['GTX 970', 'Mid (2014)', ['RTX 3050 6GB  ~$180','RX 6600  ~$200'], 7700],
+  ['GTX 960', 'Entry (2015)', ['RTX 3050 6GB  ~$180'], 4500],
+  ['GTX 780', 'Era 2013', ['RX 6600  ~$200','RTX 3050 6GB  ~$180'], 6800],
+  ['GTX 760', 'Era 2013', ['RX 6500 XT  ~$140','RTX 3050 6GB  ~$180'], 4500],
+  ['GTX 580', 'Era 2010', ['RX 6500 XT  ~$140','RTX 3050  ~$180'], 3500],
+  ['RX 9070 XT', 'High (2025)', ['RTX 5080  ~$1,000','RTX 5070 Ti  ~$750'], 26000],
+  ['RX 9070', 'Upper-mid (2025)', ['RX 9070 XT  ~$600','RTX 5070 Ti  ~$750'], 22000],
+  ['RX 7900 XTX', 'Halo (2022)', ['RTX 5090  ~$2,000','RX 9070 XT  ~$600'], 30300],
+  ['RX 7900 XT', 'High (2022)', ['RTX 5080  ~$1,000','RTX 4080 Super  ~$1,000'], 27000],
+  ['RX 7900 GRE', 'Upper-mid (2024)', ['RTX 4070 Ti Super  ~$800','RX 9070 XT  ~$600'], 24000],
+  ['RX 7800 XT', 'Upper-mid (2023)', ['RX 9070 XT  ~$600','RTX 4070 Ti Super  ~$800'], 22000],
+  ['RX 7700 XT', 'Mid (2023)', ['RX 7800 XT  ~$480','RTX 4070  ~$550'], 18800],
+  ['RX 7600 XT', 'Entry (2024)', ['RX 7700 XT  ~$400','RTX 4060 Ti  ~$400'], 14400],
+  ['RX 7600', 'Entry (2023)', ['RX 7700 XT  ~$400','RTX 4060 Ti  ~$400'], 13700],
+  ['RX 6950 XT', 'Halo (2022)', ['RTX 4080 Super  ~$1,000','RX 9070 XT  ~$600'], 26100],
+  ['RX 6900 XT', 'High (2020)', ['RTX 4070 Ti Super  ~$800','RX 9070 XT  ~$600'], 24800],
+  ['RX 6800 XT', 'High (2020)', ['RTX 4070 Ti Super  ~$800','RX 7800 XT  ~$480'], 22300],
+  ['RX 6800', 'Upper-mid (2020)', ['RX 7800 XT  ~$480','RTX 4070  ~$550'], 20100],
+  ['RX 6750 XT', 'Mid (2022)', ['RX 7700 XT  ~$400','RTX 4060 Ti  ~$400'], 18000],
+  ['RX 6700 XT', 'Mid (2021)', ['RX 7700 XT  ~$400','RTX 4060 Ti  ~$400'], 17000],
+  ['RX 6700', 'Mid (2021)', ['RX 7700 XT  ~$400'], 15500],
+  ['RX 6600 XT', 'Entry (2021)', ['RX 7600  ~$260','RTX 4060  ~$290'], 13700],
+  ['RX 6600', 'Entry (2021)', ['RX 7600  ~$260','RTX 4060  ~$290'], 12200],
+  ['RX 6500 XT', 'Budget (2022)', ['RX 7600  ~$260','RTX 3050  ~$180'], 7400],
+  ['RX 5700 XT', 'Upper-mid (2019)', ['RX 7700 XT  ~$400','RTX 4060 Ti  ~$400'], 14400],
+  ['RX 5700', 'Mid (2019)', ['RX 7600  ~$260','RTX 4060  ~$290'], 13400],
+  ['RX 5600 XT', 'Mid (2020)', ['RX 7600  ~$260','RTX 4060  ~$290'], 11200],
+  ['RX 5500 XT', 'Entry (2019)', ['RX 6600  ~$200','RTX 3050 6GB  ~$180'], 8000],
+  ['Radeon VII', 'High (2019)', ['RTX 4070  ~$550','RX 7800 XT  ~$480'], 13800],
+  ['RX 590', 'Mid (2018)', ['RX 6600  ~$200','RTX 4060  ~$290'], 8400],
+  ['RX 580', 'Mid (2017)', ['RX 6600  ~$200','RX 7600  ~$260'], 7700],
+  ['RX 570', 'Entry (2017)', ['RX 6600  ~$200'], 6700],
+  ['Vega 64', 'High (2017)', ['RX 7700 XT  ~$400','RTX 4060 Ti  ~$400'], 11600],
+  ['Vega 56', 'Mid (2017)', ['RX 7600  ~$260','RTX 4060  ~$290'], 10300],
+  ['Arc B580', 'Entry (2024)', ['RX 7700 XT  ~$400','RTX 4060 Ti  ~$400'], 14800],
+  ['Arc A770', 'Mid (2022)', ['Intel Arc B580  ~$250','RTX 4060  ~$290'], 13700],
+  ['Arc A750', 'Mid (2022)', ['Intel Arc B580  ~$250','RX 7600  ~$260'], 12500],
+  ['Radeon 890M (iGPU)', 'Integrated RDNA 3.5 (Strix Point)', ['eGPU dock or discrete RTX 4060+'], 6000],
+  ['Radeon 780M (iGPU)', 'Integrated RDNA 3 (Z1 Extreme / Ryzen 7000)', ['Best iGPU on the market — eGPU dock or discrete desktop'], 4400],
+  ['Radeon 680M (iGPU)', 'Integrated RDNA 2 (Ryzen 6000)', ['Discrete RX 6600 / RTX 3050 = night-and-day'], 3300],
+  ['Iris Xe (iGPU)', 'Integrated', ['Discrete RX 6600 / RTX 3050 doubles+ FPS'], 1800],
+  ['Arc Graphics (iGPU)', 'Integrated (Meteor Lake)', ['Discrete RTX 4060+ for any AAA gaming'], 3500],
+  ['UHD Graphics (iGPU)', 'Integrated', ['ANY discrete card above RX 6600 is a massive leap'], 800],
+];
+
+const CPU_DB = [
+  ['Ryzen 9 9950X3D',     76000], ['Ryzen 7 9800X3D',     56500],
+  ['Ryzen 9 9950X',       73500], ['Ryzen 7 9700X',       39600],
+  ['Ryzen 5 9600X',       33800],
+  ['Ryzen 9 7950X3D',     63500], ['Ryzen 9 7950X',       64000],
+  ['Ryzen 7 7800X3D',     36200], ['Ryzen 7 7700X',       36800],
+  ['Ryzen 5 7600X',       30100], ['Ryzen 5 7600',        28000],
+  ['Ryzen 9 5950X',       39500], ['Ryzen 9 5900X',       39400],
+  ['Ryzen 7 5800X3D',     28200], ['Ryzen 7 5700X',       26500],
+  ['Ryzen 5 5600X',       22000], ['Ryzen 5 5600',        21800],
+  ['Ryzen 9 3900X',       32600], ['Ryzen 7 3700X',       22500],
+  ['Ryzen 5 3600',        17500], ['Ryzen 7 2700X',       17500],
+  ['Ryzen 5 2600',        13700],
+  ['Ryzen Z2 Extreme',    19500], ['Ryzen Z1 Extreme',    17000],
+  ['Ryzen Z1',            11000], ['Steam Deck APU',       7500],
+  ['Core Ultra 9 285K',   64000], ['Core Ultra 7 265K',   53000],
+  ['Core Ultra 5 245K',   42000], ['Core Ultra 9 185H',   33000],
+  ['Core Ultra 7 155H',   28000], ['Core Ultra 5 125H',   22000],
+  ['i9-14900K',           60000], ['i7-14700K',           53000],
+  ['i5-14600K',           38000], ['i5-14400F',           26000],
+  ['i9-13900K',           58000], ['i7-13700K',           47000],
+  ['i5-13600K',           38000], ['i5-13400F',           25000],
+  ['i9-12900K',           41000], ['i7-12700K',           35000],
+  ['i5-12600K',           27000], ['i5-12400F',           19500],
+  ['i3-12100F',           14000], ['i9-11900K',           24000],
+  ['i7-11700K',           24000], ['i5-11400F',           17500],
+  ['i9-10900K',           23800], ['i7-10700K',           19500],
+  ['i5-10600K',           14500], ['i5-10400F',           12700],
+  ['i9-9900K',            17400], ['i7-9700K',            14600],
+  ['i5-9400F',             9500], ['i7-8700K',            13900],
+  ['i5-8400',              9300], ['i7-7700K',            11000],
+  ['i5-7400',              6000], ['i7-6700K',             8500],
+  ['i7-4790K',             7500], ['i5-4690K',             5300],
+  ['i7-3770K',             6500], ['i7-2700K',             5500],
+  ['Q9650 (Core 2 Quad)',  2700], ['FX-8350',              5500],
+];
+
+// 17-entry perf target table — matches desktop UpgradePanel.PerfTargets
+const PERF_TARGETS = [
+  ['720p   30 fps',     4500,  7500],
+  ['720p   60 fps',     8000, 10000],
+  ['720p   120 fps',   11000, 15000],
+  ['720p   180+ fps',  14000, 25000],
+  ['900p   60 fps',     9500, 11000],
+  ['900p   120 fps',   12500, 16000],
+  ['900p   180+ fps',  16000, 26500],
+  ['1080p  30 fps',     7000,  8500],
+  ['1080p  60 fps',    11000, 12000],
+  ['1080p  120 fps',   14000, 17500],
+  ['1080p  180+ fps',  18000, 28000],
+  ['1440p  60 fps',    18000, 14000],
+  ['1440p  120 fps',   22000, 22000],
+  ['1440p  180+ fps',  27000, 35000],
+  ['4K     60 fps',    26000, 17500],
+  ['4K     120 fps',   35000, 30000],
+  ['4K     180+ fps',  38000, 45000],
+];
+
+// Game weight categorization — mirrors UpgradePanel.GameWeight()
+const GAME_PATTERNS = [
+  ['roblox',0.18,'ultra-light'],['minecraft',0.18,'ultra-light'],
+  ['league',0.18,'ultra-light'],['dota',0.18,'ultra-light'],
+  ['hearthstone',0.18,'ultra-light'],['stardew',0.18,'ultra-light'],
+  ['rocket league',0.18,'ultra-light'],
+  ['counter-strike',0.18,'ultra-light (Source 2 runs on iGPU)'],
+  ['cs2',0.18,'ultra-light (Source 2 runs on iGPU)'],
+  ['csgo',0.18,'ultra-light'],['valorant',0.18,'ultra-light (Riot, low-spec target)'],
+  ['hades',0.18,'ultra-light'],
+  ['fortnite',0.35,'light'],['apex',0.35,'light'],['overwatch',0.35,'light'],
+  ['gta v',0.35,'light (well-optimised)'],['gta 5',0.35,'light (well-optimised)'],
+  ['cyberpunk',1.35,'heavy'],['flight sim',1.35,'heavy'],['msfs',1.35,'heavy'],
+  ['wukong',1.35,'heavy'],['alan wake',1.35,'heavy'],
+  ['witcher',1.0,'moderate'],['elden ring',1.0,'moderate'],
+];
+function gameWeight(game){
+  if (!game) return { w: 1.0, label: 'moderate (default)' };
+  const g = game.toLowerCase();
+  for (const [s, w, l] of GAME_PATTERNS) if (g.includes(s)) return { w, label: l };
+  return { w: 1.0, label: 'moderate (default)' };
+}
+
+// GPU tier guide — same pattern as desktop GpuTiers
+const GPU_TIERS = [
+  ['Handheld 720p  →  Radeon 780M iGPU / RTX 3050        (~$0 built-in / $180)', '720p', 0],
+  ['900p / iGPU+   →  RTX 3050 6GB / RX 6600              (~$180–200)', '900p', 180],
+  ['Budget 1080p   →  RTX 3050 6GB  / RX 6600              (~$180–200)', '1080p', 180],
+  ['Solid 1080p    →  RTX 4060 / RX 7600 / Arc B580        (~$260–290)', '1080p', 260],
+  ['1080p max      →  RTX 4060 Ti / RX 7700 XT              (~$400)', '1080p', 400],
+  ['1440p high     →  RTX 4070 Super / RX 7800 XT           (~$500–600)', '1440p', 500],
+  ['1440p ultra    →  RTX 4070 Ti Super / RX 9070 XT        (~$600–800)', '1440p', 600],
+  ['4K / heavy RT  →  RTX 4080 Super / RTX 5080             (~$1,000)', '4K', 1000],
+  ['Halo tier      →  RTX 5090                              (~$2,000)', '4K', 2000],
+];
+
+function priceFromText(t){
+  const m = t.match(/\$([\d,]+)/);
+  if (!m) return null;
+  const v = parseInt(m[1].replace(/,/g,''),10);
+  return isNaN(v) ? null : v;
+}
+function withinBudget(text, cap){
+  if (cap <= 0) return true;
+  const p = priceFromText(text);
+  return p == null || p <= cap;
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// HARDWARE DETECTION
+// ──────────────────────────────────────────────────────────────────────
+function detectGpu(){
+  // Returns { row: matched GPU_DB entry or null, raw: string from WebGL, vram }
+  let raw = '', vendor = '', vram = 0;
+  try {
+    const c = document.createElement('canvas');
+    const gl = c.getContext('webgl2') || c.getContext('webgl');
+    if (gl){
+      const ext = gl.getExtension('WEBGL_debug_renderer_info');
+      if (ext){
+        raw    = (gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '').toString();
+        vendor = (gl.getParameter(ext.UNMASKED_VENDOR_WEBGL)   || '').toString();
+      }
+    }
+  } catch(e){}
+  // Match: longest GPU_DB name that's a substring of the raw renderer wins.
+  const upper = raw.toUpperCase();
+  let best = null;
+  for (const row of GPU_DB) {
+    const key = row[0].toUpperCase();
+    // Strip "(iGPU)" annotations from the DB name for matching.
+    const stripped = key.replace(/\s*\(IGPU\)\s*/g, '').trim();
+    if (upper.includes(stripped)) {
+      if (!best || stripped.length > best.match.length) best = { row, match: stripped };
+    }
+  }
+  return { row: best ? best.row : null, raw, vendor, vram };
+}
+
+let benchedCpu = null; // { score (CPU Mark estimate), opsPerSec, threads, nearest }
+
+function nearestCpu(score){
+  // Find CPU_DB entry with closest CPU Mark.
+  let best = null, bestDiff = Infinity;
+  for (const row of CPU_DB) {
+    const d = Math.abs(row[1] - score);
+    if (d < bestDiff) { bestDiff = d; best = row; }
+  }
+  return best;
+}
+
+const benchWorkerSrc = "let go=true,ramArr=null;self.onmessage=e=>{if(e.data==='stop')go=false;};let x=0.001,n=0,last=performance.now();try{ramArr=new Float64Array(4*1024*1024);}catch(e){ramArr=new Float64Array(1024);}for(let i=0;i<ramArr.length;i++)ramArr[i]=Math.random();(function loop(){while(performance.now()-last<50&&go){for(let i=0;i<50000;i++){x=Math.sqrt(x*1.0001+0.5);if(x>1e9)x=0.001;const idx=(i*2654435761)>>>0;ramArr[idx%ramArr.length]=x;x+=ramArr[(idx*7)%ramArr.length]*1e-9;}n+=50000;}last=performance.now();self.postMessage(n);n=0;if(go)setTimeout(loop,0);else self.close();})();";
+
+function benchCpu(seconds, onProgress){
+  // All-thread CPU + RAM-thrash benchmark. Returns ops/sec and an estimated
+  // PassMark CPU Mark via calibrated multiplier.
+  return new Promise(resolve => {
+    const threads = navigator.hardwareConcurrency || 4;
+    const blob = new Blob([benchWorkerSrc], {type:'text/javascript'});
+    const url = URL.createObjectURL(blob);
+    const workers = [];
+    let iters = 0;
+    for (let i = 0; i < threads; i++) {
+      const w = new Worker(url);
+      w.onmessage = e => { iters += e.data; };
+      workers.push(w);
+    }
+    const t0 = performance.now();
+    const tEnd = t0 + seconds * 1000;
+    const tick = setInterval(() => {
+      const now = performance.now();
+      onProgress && onProgress(Math.min(1, (now - t0) / (tEnd - t0)));
+      if (now >= tEnd) {
+        clearInterval(tick);
+        workers.forEach(w => { try{ w.postMessage('stop'); w.terminate(); }catch(e){} });
+        const elapsed = (now - t0) / 1000;
+        const opsPerSec = iters / elapsed;
+        // Calibration: ops/sec → PassMark CPU Mark.
+        // Anchored against a measured Ryzen 7 7800X3D run (~36200 CPU Mark
+        // produced ~2.4 G ops/sec total) → multiplier ≈ 1.51e-5.
+        const score = Math.round(opsPerSec * 1.51e-5);
+        resolve({ opsPerSec, threads, score, nearest: nearestCpu(score) });
+      }
+    }, 200);
+  });
+}
+
+function guessDeviceProfile(){
+  const ua = navigator.userAgent.toLowerCase();
+  const tp = navigator.maxTouchPoints || 0;
+  const w  = screen.width, h = screen.height;
+  const minDim = Math.min(w, h), maxDim = Math.max(w, h);
+  if (/rog ally|legion go|steam ?deck/i.test(ua) || (tp > 0 && minDim <= 800 && /windows|linux/i.test(ua)))
+    return { kind: 'handheld', label: 'Handheld PC', detail: 'M.2 2230/2242 SSD, microSD Express, PTM7950 repaste, eGPU dock when at home' };
+  if (/cros|chromebook/i.test(ua))
+    return { kind: 'chromebook', label: 'Chromebook', detail: 'Most upgrades are external (USB-C SSD, dock)' };
+  if (tp > 0 || /mobile|android|iphone|ipad/i.test(ua))
+    return { kind: 'mobile', label: 'Mobile / Tablet', detail: tp + ' touch points · ' + minDim + '×' + maxDim };
+  if (/macintosh|mac os/i.test(ua))
+    return { kind: 'mac', label: 'Mac', detail: 'Apple Silicon? RAM and SSD soldered on M-series — external Thunderbolt only' };
+  if (maxDim <= 1920 && minDim <= 1200 && /windows/i.test(ua))
+    return { kind: 'laptop', label: 'Laptop (likely)', detail: 'Check SODIMM slots, M.2 NVMe upgrades, eGPU if you have Thunderbolt/USB4' };
+  if (/windows/i.test(ua))
+    return { kind: 'desktop', label: 'Desktop (likely)', detail: 'Full CPU socket + GPU + RAM upgrade paths apply' };
+  return { kind: 'unknown', label: 'Unknown', detail: 'Could not classify form factor from UA + screen' };
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// HARDWARE DIAGNOSTICS — live sensor row + table fills
+// ──────────────────────────────────────────────────────────────────────
+let _cpuBaseline = 0;
+let _tempMin = Infinity, _tempMax = -Infinity;
+
+(function initDiag(){
+  refreshDiagAll();
+  setInterval(updateLiveSensors, 2500);
+  document.getElementById('d-refresh').onclick = refreshDiagAll;
+})();
+
+function refreshDiagAll(){
+  // GPU detection
+  const gpu = detectGpu();
+  if (gpu.row) {
+    document.getElementById('d-gpu-name').textContent = gpu.row[0];
+    const desc = gpu.row[1];
+    document.getElementById('d-gpu-info').textContent = desc + (gpu.raw ? '   ·   ' + gpu.raw.split('(')[0].trim() : '');
+  } else {
+    document.getElementById('d-gpu-name').textContent = gpu.raw ? gpu.raw.split('(')[0].trim() : 'Unknown';
+    document.getElementById('d-gpu-info').textContent = gpu.vendor || 'Browser blocks renderer info';
+  }
+  document.getElementById('d-gpu-pct').textContent = '';
+
+  // CPU thread count
+  const threads = navigator.hardwareConcurrency || 0;
+  // Heuristic: most consumer CPUs are 2 threads/core; HEDT could be 1; we just show threads.
+  document.getElementById('d-cpu-name').textContent = benchedCpu && benchedCpu.nearest
+    ? benchedCpu.nearest[0] + ' (estimated)'
+    : 'Run "Analyze my system" in Upgrade Advisor to estimate model';
+  document.getElementById('d-cpu-info').textContent = '— cores / ' + (threads || '?') + ' threads' +
+    (benchedCpu ? '   ·   ~' + (benchedCpu.opsPerSec/1e6).toFixed(0) + ' M ops/sec  ·  est. CPU Mark ≈ ' + benchedCpu.score.toLocaleString() : '');
+
+  // RAM total via deviceMemory (rounded GB)
+  const ramGb = navigator.deviceMemory || null;
+  if (ramGb){
+    const total = ramGb * 1024;
+    document.getElementById('d-ram-info').textContent = '— MB free / ' + total.toLocaleString() + ' MB    (deviceMemory rounded)';
+  } else {
+    document.getElementById('d-ram-info').textContent = 'Browser hides RAM size';
+  }
+
+  // Storage quota → fill the logical-volume placeholder row
+  if (navigator.storage && navigator.storage.estimate) {
+    navigator.storage.estimate().then(est => {
+      const total = (est.quota || 0);
+      const free  = (est.quota || 0) - (est.usage || 0);
+      const used  = est.quota ? Math.round((est.usage || 0) / est.quota * 100) : 0;
+      document.getElementById('d-vol-total').textContent = (total/1e9).toFixed(1);
+      document.getElementById('d-vol-free').textContent  = (free/1e9).toFixed(1);
+      document.getElementById('d-vol-used').textContent  = used + '%';
+    });
+  }
+
+  // Drive Health — populate from benchmarked-system info if available; else placeholder
+  if (gpu.row) {
+    document.getElementById('d-health-name').textContent = '(browser sandbox blocks SMART — desktop reads MSStorageDriver_ATAPISmartData / MSFT_PhysicalDisk)';
+  }
+
+  updateLiveSensors();
+}
+
+function updateLiveSensors(){
+  // CPU% estimate via tight-loop timing
+  const cpuPct = measureCpuLoad();
+  const cpuEl = document.getElementById('d-cpu-pct');
+  cpuEl.textContent = cpuPct.toFixed(0) + '%';
+  cpuEl.style.color = cpuPct > 90 ? 'var(--bad)' : cpuPct > 70 ? 'var(--warn)' : 'var(--ok)';
+
+  // RAM% via JS heap (tab-only; honest fallback)
+  if (performance.memory) {
+    const used = performance.memory.usedJSHeapSize;
+    const cap  = performance.memory.jsHeapSizeLimit;
+    const pct  = (used / cap) * 100;
+    const ramEl = document.getElementById('d-ram-pct');
+    ramEl.textContent = pct.toFixed(0) + '% ';
+    ramEl.style.color = pct > 90 ? 'var(--bad)' : pct > 75 ? 'var(--warn)' : 'var(--ok)';
+    document.getElementById('d-ram-info').textContent =
+      (used/1e6).toFixed(0) + ' MB used / ' + (cap/1e6).toFixed(0) + ' MB heap cap   (this tab only)';
+  }
+  // Temp: not available in browser
+  document.getElementById('d-cpu-temp').textContent = 'N/A';
+  document.getElementById('d-cpu-temp-mm').textContent = 'no sensor (browser sandbox)';
+}
+
+function measureCpuLoad(){
+  // Tight-loop ops in 25 ms; compare to baseline (set on first call when
+  // system is hopefully idle). Lower count = higher load on the system.
+  const start = performance.now();
+  let n = 0;
+  let x = 0.001;
+  while (performance.now() - start < 25) {
+    for (let i = 0; i < 1000; i++) { x = Math.sqrt(x*1.001 + 0.5); if (x > 1e9) x = 0.001; }
+    n += 1000;
+  }
+  if (_cpuBaseline === 0) { _cpuBaseline = n; return 0; }
+  if (n > _cpuBaseline) _cpuBaseline = n;
+  const ratio = n / _cpuBaseline;
+  return Math.max(0, Math.min(100, (1 - ratio) * 100));
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// STRESS TEST — same workers as benchCpu but with full preset durations
+// ──────────────────────────────────────────────────────────────────────
+(function initStress(){
+  const start=document.getElementById('s-start');
+  const stop =document.getElementById('s-stop');
+  const pre  =document.getElementById('s-preset');
+  const bar  =document.getElementById('s-bar');
+  const score=document.getElementById('s-score');
+  const sub  =document.getElementById('s-score-sub');
+  const stat =document.getElementById('s-status');
+  const rating=document.getElementById('s-rating');
+  const ratingSub=document.getElementById('s-rating-sub');
+  const therm=document.getElementById('s-thermal');
+  const thermSub=document.getElementById('s-thermal-sub');
+  let workers=[], running=false, tStart=0, tEnd=0, iters=0, interval=null;
+  let samples=[], lastIters=0, lastSampleTime=0;
+
+  start.onclick=()=>{
+    if(running) return;
+    const secs=parseInt(pre.value,10);
+    const threads=navigator.hardwareConcurrency||4;
+    iters=0; lastIters=0; samples=[];
+    tStart=performance.now(); tEnd=tStart+secs*1000; lastSampleTime=tStart;
+    running=true;
+    start.disabled=true; stop.disabled=false;
+    stat.textContent='Running — pegging '+threads+' threads + 256 MB RAM thrash for '+secs+'s';
+    score.textContent='…'; rating.textContent='…'; therm.textContent='…';
+    rating.style.color='var(--text)'; therm.style.color='var(--text)';
+    const blob=new Blob([benchWorkerSrc],{type:'text/javascript'});
+    const url=URL.createObjectURL(blob);
+    workers=[];
+    for(let i=0;i<threads;i++){
+      const w=new Worker(url);
+      w.onmessage=e=>{ iters+=e.data; };
+      workers.push(w);
+    }
+    interval=setInterval(()=>{
+      const now=performance.now();
+      bar.style.width = Math.min(100, (now-tStart)/(tEnd-tStart)*100) + '%';
+      if (now - lastSampleTime >= 1000){
+        samples.push((iters - lastIters) / ((now - lastSampleTime)/1000));
+        lastIters = iters; lastSampleTime = now;
+      }
+      if(now>=tEnd) finish();
+    },100);
+  };
+  stop.onclick=()=>{ if(running) finish(true); };
+
+  function finish(cancelled){
+    running=false;
+    clearInterval(interval);
+    workers.forEach(w=>{try{w.postMessage('stop'); w.terminate();}catch(e){}});
+    workers=[];
+    const elapsedSec=(performance.now()-tStart)/1000;
+    const opsPerSec=iters/elapsedSec;
+    const threads = navigator.hardwareConcurrency || 1;
+
+    // Benchmark score — same shape as desktop Stressor: iters / elapsed / 10
+    const benchScore = Math.round(opsPerSec / 10);
+    score.textContent = benchScore.toLocaleString();
+    score.style.color = 'var(--accent)';
+    sub.textContent   = 'iters/sec/10 across '+threads+' threads · '+(opsPerSec/1e6).toFixed(0)+' M ops/sec';
+
+    // Throttle detection (variance proxy — desktop uses real ACPI temp).
+    let throttled = false;
+    let cvStr = '';
+    if (samples.length >= 3){
+      const mean = samples.reduce((a,b)=>a+b,0)/samples.length;
+      const variance = samples.reduce((a,b)=>a+(b-mean)*(b-mean),0)/samples.length;
+      const cv = Math.sqrt(variance) / mean;
+      cvStr = ' · CV '+(cv*100).toFixed(1)+'%';
+      throttled = cv >= 0.12;
+      if (cv < 0.05) {
+        therm.textContent = '✓ Stable'; therm.style.color = 'var(--ok)';
+        thermSub.textContent = 'no throttle signal'+cvStr;
+      } else if (cv < 0.12) {
+        therm.textContent = '~ Mild dip'; therm.style.color = 'var(--warn)';
+        thermSub.textContent = 'possible thermal pressure'+cvStr;
+      } else {
+        therm.textContent = '⚠ THROTTLED'; therm.style.color = 'var(--bad)';
+        thermSub.textContent = 'score sagged hard, check cooling'+cvStr;
+      }
+    } else {
+      therm.textContent = '—';
+      thermSub.textContent = 'run longer for stability data';
+    }
+
+    // Silicon rating — matches desktop Stressor.Run() formula EXACTLY:
+    //   sscore = min(4, cores/4)
+    //          + min(2, ramGb/16)
+    //          + 2.0   (base)
+    //          + (gpu present ? 2.0 : 0.5)
+    //          - (throttled ? 1.5 : 0)
+    //   rating = clamp(round(sscore), 1, 10)
+    const cores  = threads;                    // Environment.ProcessorCount → web equivalent
+    const ramGb  = navigator.deviceMemory || 0; // browser rounds to power of 2
+    const gpuPresent = detectGpu().row !== null;
+    let sscore = Math.min(4, cores / 4)
+               + Math.min(2, ramGb / 16)
+               + 2.0
+               + (gpuPresent ? 2.0 : 0.5);
+    if (throttled) sscore -= 1.5;
+    const rt = Math.max(1, Math.min(10, Math.round(sscore)));
+
+    rating.textContent = rt + '/10';
+    rating.style.color = rt >= 7 ? 'var(--ok)' : rt >= 4 ? 'var(--warn)' : 'var(--bad)';
+    ratingSub.textContent = 'cores='+cores+' · ram='+ramGb+'GB · gpu='+(gpuPresent?'detected':'fallback')+(throttled?' · throttle penalty':'');
+
+    // Cache the benchmark score for the Upgrade Advisor + Diag panels.
+    benchedCpu = {
+      opsPerSec, threads,
+      score: Math.round(opsPerSec * 1.51e-5),
+      nearest: nearestCpu(Math.round(opsPerSec * 1.51e-5)),
+    };
+
+    stat.textContent  = (cancelled?'Cancelled':'Done') + ' — ran '+elapsedSec.toFixed(1)+' sec';
+    start.disabled=false; stop.disabled=true; bar.style.width='0%';
+    refreshDiagAll();
+  }
+})();
+
+// ──────────────────────────────────────────────────────────────────────
+// UPGRADE ADVISOR — Analyze + routed advice + Can my PC run it
+// ──────────────────────────────────────────────────────────────────────
+(function initUpgrade(){
+  const out = document.getElementById('u-out');
+  const btn = document.getElementById('u-analyze');
+  const status = document.getElementById('u-bench-status');
+  const barWrap = document.getElementById('u-bench-bar-wrap');
+  const bar = document.getElementById('u-bench-bar');
+
+  function getBudget(){ return parseInt(document.getElementById('u-budget').value, 10) || 0; }
+  function getRes(){ return document.getElementById('u-res').value || 'Any'; }
+
+  btn.onclick = async () => {
+    btn.disabled = true;
+    out.innerHTML = '';
+    status.textContent = 'Detecting GPU…';
+    barWrap.style.display = 'block';
+    bar.style.width = '0%';
+
+    // 1. GPU detect
+    const gpu = detectGpu();
+
+    // 2. CPU benchmark (5 seconds)
+    status.textContent = 'Benchmarking CPU (5 sec — pegging ' + (navigator.hardwareConcurrency||4) + ' threads + 256 MB RAM thrash)…';
+    const result = await benchCpu(5, p => { bar.style.width = (p*100).toFixed(0) + '%'; });
+    benchedCpu = result;
+    barWrap.style.display = 'none';
+    status.textContent = '✓ Detection complete.';
+    btn.disabled = false;
+
+    // 3. Render the analysis
+    renderAnalysis(gpu, result);
+    refreshDiagAll();
+  };
+
+  function renderAnalysis(gpu, cpu){
+    const cap = getBudget();
+    const targetRes = getRes();
+    const prof = guessDeviceProfile();
+    const w = (line, klass) => out.innerHTML += (klass ? '<span class="'+klass+'">' + line + '</span>' : line) + '\n';
+
+    out.innerHTML = '';
+    w('═══  SYSTEM PROFILE  ═══', 'acc');
+    w('');
+    w('  Form factor:   ' + prof.label, 'ok');
+    w('  Detail:        ' + prof.detail, 'muted');
+    w('  CPU:           ' + (cpu.nearest ? cpu.nearest[0] + '  (closest match by benchmark)' : '—'), 'ok');
+    w('  CPU Mark est:  ' + cpu.score.toLocaleString() + '   (' + (cpu.opsPerSec/1e6).toFixed(0) + ' M ops/sec across ' + cpu.threads + ' threads)', '');
+    if (gpu.row) {
+      w('  GPU:           ' + gpu.row[0] + '  (' + gpu.row[1] + ')', 'ok');
+      w('  G3D Mark:      ' + gpu.row[3].toLocaleString(), '');
+    } else {
+      w('  GPU:           ' + (gpu.raw ? gpu.raw.split('(')[0].trim() : 'unknown') + '  (not in DB)', 'warn');
+    }
+    if (gpu.raw) w('  WebGL renderer: ' + gpu.raw, 'muted');
+    w('');
+    if (cap > 0 || targetRes !== 'Any') {
+      w('═══  ACTIVE FILTERS  ═══', 'acc');
+      if (cap > 0)              w('  💰  Max budget:        $' + cap.toLocaleString() + ' USD', '');
+      if (targetRes !== 'Any')  w('  📐  Target resolution: ' + targetRes, '');
+      w('');
+    }
+
+    // Route by device class
+    if (prof.kind === 'handheld')      handheldAdvice(w, cap);
+    else if (prof.kind === 'laptop' || prof.kind === 'mobile' || prof.kind === 'mac' || prof.kind === 'chromebook')
+                                        laptopAdvice(w, cap);
+    else                                desktopAdvice(w, gpu, cpu, cap, targetRes);
+
+    w('');
+    w('⚠  Prices are rough street estimates — verify on pcpartpicker.com before buying.', 'warn');
+  }
+
+  function handheldAdvice(w, cap){
+    w('═══  HANDHELD UPGRADE GUIDE  ═══', 'acc');
+    w('');
+    w('⛔  CPU & RAM: NOT UPGRADEABLE', 'bad');
+    w('    Handheld APUs are BGA-soldered to the board. RAM is soldered LPDDR5.', 'muted');
+    w('    Nothing can be swapped without board-level micro-soldering.', 'muted');
+    w('');
+    w('✅  STORAGE: UPGRADEABLE', 'ok');
+    w('    Most handhelds use M.2 2230 NVMe (Ally / Steam Deck) or 2242 (Legion Go).', '');
+    const picks = [
+      '      • WD SN740 1TB 2230   ~$80    — OEM, widely confirmed compatible',
+      '      • WD SN740 2TB 2230   ~$165   — doubles capacity',
+      '      • Corsair MP600 Mini 2TB 2230  ~$170   — high-end',
+      '      • Inland TN446 2TB 2242  ~$140   — for Legion Go',
+    ];
+    let shown = 0;
+    for (const p of picks) if (withinBudget(p, cap)) { w(p, ''); shown++; }
+    if (shown === 0) w('      (none under your budget — try raising the cap)', 'warn');
+    w('    Plus: microSD Express card for extra game storage (faster than UHS-I).', '');
+    w('');
+    w('✅  THERMAL / PERFORMANCE TWEAKS', 'ok');
+    w('    • Repaste every 12–18 months with PTM7950 or Honeywell PTM — biggest single win.', '');
+    w('    • Tune TDP: lower for battery, higher for AAA.', '');
+    w('    • External fan / cooling shell adds ~5–10°C headroom.', '');
+    w('');
+    w('✅  ACCESSORIES THAT FEEL LIKE UPGRADES', 'ok');
+    w('    • External eGPU dock (USB4 / OCuLink) — desktop-class GPU when docked.', '');
+    w('    • USB-C hub with HDMI + charger passthrough — turn it into a console.', '');
+  }
+
+  function laptopAdvice(w, cap){
+    w('═══  LAPTOP UPGRADE GUIDE  ═══', 'acc');
+    w('');
+    w('⛔  CPU: NOT UPGRADEABLE (soldered BGA package).', 'bad');
+    w('⛔  GPU: usually soldered — only some workstation/rugged laptops use MXM modules.', 'bad');
+    w('');
+    w('❓  RAM form factor: browser can\'t read SODIMM vs soldered. Check service manual / iFixit teardown.', 'warn');
+    w('    If SODIMM:  32 GB (2×16) or 64 GB (2×32) kit — match DDR generation.', '');
+    w('    If LPDDR / soldered: not upgradeable.', '');
+    w('');
+    w('✅  STORAGE: usually one or two M.2 NVMe slots — UPGRADEABLE.', 'ok');
+    w('    Check service manual for form factor (2280 / 2242 / 2230) and slot count.', '');
+    w('    Good current picks: Samsung 990 Pro, WD SN850X, Crucial T500.', '');
+    w('');
+    w('✅  EXTERNAL GPU (eGPU)', 'ok');
+    w('    If your laptop has Thunderbolt 4 / USB4 / OCuLink, an eGPU enclosure can give', '');
+    w('    desktop-class gaming at the desk. Razer Core X / Sonnet Breakaway.', '');
+  }
+
+  function desktopAdvice(w, gpu, cpu, cap, targetRes){
+    w('═══  DESKTOP UPGRADE PATHS  ═══', 'acc');
+    w('');
+    // RAM verdict — browser-side estimate (rounded)
+    const ramGb = navigator.deviceMemory || 0;
+    if (ramGb > 0) {
+      let verdict, klass;
+      if (ramGb >= 32) { verdict = 'PLENTY for any current AAA + multitasking'; klass = 'ok'; }
+      else if (ramGb >= 16) { verdict = 'GOOD for 1080p/1440p AAA'; klass = 'ok'; }
+      else if (ramGb >= 8)  { verdict = 'TIGHT — most 2024+ AAA recommend 16 GB'; klass = 'warn'; }
+      else                  { verdict = 'LOW — many modern games won\'t launch with under 8 GB'; klass = 'bad'; }
+      w('💾  Your RAM:  ' + ramGb + ' GB (rounded)  —  ' + verdict, klass);
+      if (ramGb < 16)
+        w('    Cheapest meaningful upgrade: 2×8 GB or 2×16 GB matched kit (~$40–$90 DDR4, $70–$130 DDR5).', '');
+      else if (ramGb < 32)
+        w('    32 GB only matters for MSFS, Cyberpunk RT, Star Citizen, or heavy multitasking.', 'muted');
+      w('');
+    }
+
+    // GPU upgrade picks
+    if (gpu.row) {
+      w('🎮  Your GPU:   ' + gpu.row[0], 'ok');
+      w('    Class:     ' + gpu.row[1], 'muted');
+      w('    G3D Mark:  ' + gpu.row[3].toLocaleString(), '');
+      w('');
+      w('── Direct upgrade picks for your GPU ──', 'muted');
+      let shown = 0;
+      for (const u of gpu.row[2]) if (withinBudget(u, cap)) { w('    •  ' + u, ''); shown++; }
+      if (shown === 0) w('    (no GPU upgrades at or below $' + cap.toLocaleString() + ')', 'warn');
+      w('');
+    } else {
+      w('🎮  Your GPU:   not in DB — browser couldn\'t match the WebGL renderer string', 'warn');
+      w('');
+    }
+
+    // Target-resolution recommendation
+    if (targetRes !== 'Any') {
+      const first = GPU_TIERS.find(t => t[1] === targetRes);
+      if (first)
+        w('📐  For ' + targetRes + ' gaming, aim for at least:  ' + first[0].split('→').slice(1).join('→').trim(), 'ok');
+      w('');
+    }
+    w('── General GPU tiers by target resolution ──', 'muted');
+    for (const g of GPU_TIERS) {
+      if (cap > 0 && g[2] > cap) continue;
+      const hit = targetRes !== 'Any' && g[1] === targetRes;
+      w('    ' + (hit ? '★ ' : '  ') + g[0], hit ? 'ok' : '');
+    }
+  }
+
+  // Can my PC run it
+  document.getElementById('r-check').onclick = () => {
+    const rOut = document.getElementById('r-out');
+    if (!benchedCpu) {
+      rOut.innerHTML = '<span class="warn">Click "Analyze my system" above first to detect your hardware.</span>';
+      return;
+    }
+    const gpu = detectGpu();
+    if (!gpu.row) {
+      rOut.innerHTML = '<span class="warn">Couldn\'t auto-detect your GPU from the WebGL renderer (Firefox / Safari may block this). Run on a Chromium-based browser, or use the desktop LodeForge.</span>';
+      return;
+    }
+    const gameRaw = document.getElementById('r-game').value.trim();
+    const game = gameRaw || '(any modern AAA)';
+    const targetLabel = document.getElementById('r-target').value;
+    const target = PERF_TARGETS.find(t => t[0] === targetLabel) || PERF_TARGETS[8];
+
+    const gw = gameWeight(gameRaw);
+    const adjGpuReq = Math.round(target[1] * gw.w);
+    const adjCpuReq = Math.round(target[2] * gw.w);
+    const haveGpu = gpu.row[3];
+    const haveCpu = benchedCpu.score;
+    const gpuRatio = haveGpu / adjGpuReq;
+    const cpuRatio = haveCpu / adjCpuReq;
+
+    let rating, label, klass;
+    if (gpuRatio >= 1.40)      { rating = 4; label = 'COMFORT — runs well above target'; klass = 'ok'; }
+    else if (gpuRatio >= 1.10) { rating = 3; label = 'YES — should hit target';            klass = 'ok'; }
+    else if (gpuRatio >= 0.85) { rating = 2; label = 'MARGINAL — close, drop settings';   klass = 'warn'; }
+    else if (gpuRatio >= 0.40) { rating = 1; label = 'BELOW — playable only at low/FSR';  klass = 'warn'; }
+    else                       { rating = 0; label = 'NO — GPU upgrade required';         klass = 'bad'; }
+
+    const cpuBottleneck = cpuRatio < 0.70;
+    rOut.innerHTML = '';
+    rOut.innerHTML += '<span class="acc">═══  '+escapeHtml(game)+'  @  '+escapeHtml(targetLabel)+'  ═══</span>\n\n';
+    rOut.innerHTML += '  Game weight:  <span class="muted">×'+gw.w.toFixed(2)+'  ('+gw.label+')</span>\n\n';
+    rOut.innerHTML += '  Your GPU:    <span class="ok">'+gpu.row[0]+'</span>  (G3D ≈ '+haveGpu.toLocaleString()+')\n';
+    rOut.innerHTML += '    needs:     G3D ≈ '+adjGpuReq.toLocaleString()+'   →  '+(gpuRatio*100).toFixed(0)+'% of target\n\n';
+    rOut.innerHTML += '  Your CPU:    <span class="ok">'+(benchedCpu.nearest ? benchedCpu.nearest[0] + ' (estimated)' : 'estimate')+'</span>  (CPU Mark ≈ '+haveCpu.toLocaleString()+')\n';
+    rOut.innerHTML += '    needs:     CPU Mark ≈ '+adjCpuReq.toLocaleString()+'   →  '+(cpuRatio*100).toFixed(0)+'% of target\n\n';
+    rOut.innerHTML += '<span class="'+klass+'">  Verdict:    '+label+'  ['+rating+'/4]</span>\n';
+    if (cpuBottleneck && rating > 0) {
+      rOut.innerHTML += '<span class="warn">  ⚠ CPU bottleneck — your GPU has headroom but the CPU is the limiting factor.</span>\n';
+    } else if (!cpuBottleneck && rating === 0) {
+      rOut.innerHTML += '<span class="muted">  CPU is fine — GPU is the issue.</span>\n';
+    }
+    rOut.innerHTML += '\n<span class="muted">Heuristic uses PassMark G3D Mark + CPU Mark with per-game weighting. Actual frame rates depend on settings, drivers, RAM speed, and the specific scene.</span>';
+  };
+})();
+
+// ──────────────────────────────────────────────────────────────────────
+// PERF HISTORY — chart + CSV export + clear
+// ──────────────────────────────────────────────────────────────────────
+(function initPerf(){
+  const cvs=document.getElementById('p-chart');
+  const stats=document.getElementById('p-stats');
+  const ctx=cvs.getContext('2d');
+  let fpsData=[], heapData=[];
+  const MAX=240;
+  let last=performance.now(), fpsSum=0, fpsCount=0;
+  function frame(){
+    const now=performance.now();
+    fpsCount++; fpsSum += 1000/(now-last); last=now;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  setInterval(()=>{
+    const fps = fpsCount>0 ? fpsSum/fpsCount : 0;
+    fpsSum=0; fpsCount=0;
+    fpsData.push(fps);
+    if (fpsData.length>MAX) fpsData.shift();
+    const heap = performance.memory ? performance.memory.usedJSHeapSize/1e6 : 0;
+    heapData.push(heap);
+    if (heapData.length>MAX) heapData.shift();
+    redraw();
+    stats.textContent = 'Samples: '+fpsData.length+
+      '  ·  FPS now: '+fps.toFixed(0)+'  ·  Heap now: '+heap.toFixed(1)+' MB' +
+      (fpsData.length>1 ? '  ·  FPS avg: '+(fpsData.reduce((a,b)=>a+b,0)/fpsData.length).toFixed(1) : '');
+  }, 500);
+  function redraw(){
+    const W=cvs.width=cvs.clientWidth*devicePixelRatio;
+    const H=cvs.height=cvs.clientHeight*devicePixelRatio;
+    ctx.clearRect(0,0,W,H);
+    ctx.lineWidth=2*devicePixelRatio;
+    const pad=40*devicePixelRatio;
+    ctx.strokeStyle='rgba(255,255,255,.08)';
+    for(let pct=0;pct<=100;pct+=25){
+      const y=pad+(H-pad*2)*(1-pct/100);
+      ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(W-pad,y); ctx.stroke();
+      ctx.fillStyle='rgba(180,172,208,.6)'; ctx.font=(10*devicePixelRatio)+'px Consolas';
+      ctx.fillText(pct+'%', 4*devicePixelRatio, y+3*devicePixelRatio);
+    }
+    if (fpsData.length>1) {
+      ctx.strokeStyle='#a855f7';
+      ctx.beginPath();
+      fpsData.forEach((v,i)=>{
+        const x=pad+(W-pad*2)*(i/(MAX-1));
+        const y=pad+(H-pad*2)*(1-Math.min(1,v/120));
+        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+      });
+      ctx.stroke();
+    }
+    const hMax=Math.max(...heapData,100);
+    if (heapData.length>1) {
+      ctx.strokeStyle='#48dc82';
+      ctx.beginPath();
+      heapData.forEach((v,i)=>{
+        const x=pad+(W-pad*2)*(i/(MAX-1));
+        const y=pad+(H-pad*2)*(1-v/hMax);
+        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+      });
+      ctx.stroke();
+    }
+  }
+  document.getElementById('p-refresh').onclick=()=>redraw();
+  document.getElementById('p-clear').onclick=()=>{ fpsData=[]; heapData=[]; redraw(); stats.textContent = 'Cleared.'; };
+  document.getElementById('p-export').onclick=()=>{
+    const lines=['idx,fps,heap_mb'];
+    const n = Math.max(fpsData.length, heapData.length);
+    for (let i=0;i<n;i++){
+      const f = fpsData[i] !== undefined ? fpsData[i].toFixed(2) : '';
+      const h = heapData[i] !== undefined ? heapData[i].toFixed(2) : '';
+      lines.push(i+','+f+','+h);
+    }
+    const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'lodeforge_perf_'+Date.now()+'.csv';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  };
+})();
+
+// ──────────────────────────────────────────────────────────────────────
+// SETTINGS — preview list (toggles auto-save in desktop; no-op here)
+// ──────────────────────────────────────────────────────────────────────
+(function initSettings(){
+  const TOGGLES = [
+    ['Stealth Mode',          'Minimize to system tray (double-click tray icon to restore)'],
+    ['Laptop Power Guard',    'Auto-switch to power-saver scheme at <20% battery via powercfg'],
+    ['Performance Overlay',   'Always-on-top HUD with live CPU / GPU / RAM / Temp readouts'],
+    ['Dead Drive Recovery',   'Default mode for all clone operations (skip bad sectors)'],
+    ['RGB Status Sync',       'Sends color to OpenRGB on localhost:6742 — green ≤60°C, amber 60-80, red >80'],
+    ['Phone Dashboard',       'Live web dashboard from any device on your Wi-Fi (built-in HTTP server, port 8765)'],
+  ];
+  const el = document.getElementById('settings-list');
+  el.innerHTML = TOGGLES.map(t =>
+    '<div class="toggle-row"><div class="toggle-meta"><div class="toggle-name">'+escapeHtml(t[0])+'</div><div class="toggle-desc">'+escapeHtml(t[1])+'</div></div><div class="switch" data-on="false"></div></div>'
+  ).join('');
+  el.querySelectorAll('.switch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      const on = sw.dataset.on === 'true';
+      sw.dataset.on = (!on).toString();
+      sw.classList.toggle('on', !on);
+    });
+  });
+})();
+</script>
+</body>
+</html>
