@@ -1,6 +1,8 @@
-# Lodestone — A Free Windows System Suite
+# LodeForge — Home of Lodestone System Suite
 
-A premium-feeling, dark-themed Windows utility that does what you'd normally need a half-dozen separate tools for. Live hardware monitoring, NVMe + SATA SMART, stress testing, ISO → USB writing, drive cloning, upgrade advice, and a Pi-hole-style **phone dashboard** you open from any browser on your Wi-Fi.
+> **LodeForge** is the project. **Lodestone** is the app it builds — a free, dark-themed Windows utility that does what you'd normally need a half-dozen separate tools for.
+
+Live hardware monitoring, NVMe + SATA SMART, stress testing, ISO → USB writing, drive cloning, upgrade advice, and a Pi-hole-style **phone dashboard** you open from any browser on your Wi-Fi.
 
 Single 76 MB self-contained exe. No installer, no telemetry, no ads.
 
