@@ -654,8 +654,37 @@ function fmtMb(b){ return (b/1e6).toFixed(0)+' MB'; }
 // ──────────────────────────────────────────────────────────────────────
 // GPU + CPU PassMark databases  (subset of desktop's GpuBench/CpuBench)
 // Each GPU: [renderName, classLabel, [upgrades], passmarkG3D]
-// Each CPU: [name, passmarkCpuMark]
+// Each CPU: [name, passmarkCpuMark, igpuName]
 // ──────────────────────────────────────────────────────────────────────
+
+// 22 desktop sockets — 1:1 port of UpgradePanel.cs Sockets dictionary
+// Each entry: { era, cpus[], ram, note }. Used for the manual socket
+// picker + per-socket CPU upgrade list in desktopAdvice().
+const SOCKETS = {
+  'LGA775':     { era:'2006-2009', cpus:['Core 2 Quad Q9650  ~$25 used','Core 2 Quad Q9550  ~$15 used','Xeon X5470 w/ mod  ~$20'], ram:'DDR2-800 / DDR3-1333', note:'Best CPU for this socket is a Q9650 or modded Xeon. Platform is 16+ yrs old — consider a full upgrade.' },
+  'LGA1156':    { era:'2009-2011', cpus:['i7-870  ~$20 used','Xeon X3470  ~$25 used'], ram:'DDR3-1333', note:'LGA1156 caps at Nehalem. Any LGA1151 build beats it for under $200 used.' },
+  'LGA1155':    { era:'2011-2013', cpus:['i7-3770K  ~$40 used','i7-2700K  ~$30 used','Xeon E3-1270 v2  ~$35'], ram:'DDR3-1333 / 1600', note:'Ivy Bridge caps here. Overclocking a 3770K keeps it game-viable at 1080p / 60.' },
+  'LGA1150':    { era:'2013-2015', cpus:['i7-4790K  ~$60 used','Xeon E3-1271 v3  ~$50','i7-4770K  ~$45'], ram:'DDR3-1600', note:'4790K is still decent for older games. Z97 boards needed for OC.' },
+  'LGA1151':    { era:'2015-2020', cpus:['i7-7700K  ~$60 used (v1 board)','i5-9400F  ~$50','i7-8700K  ~$90','i7-9700K  ~$110','i9-9900K  ~$150'], ram:'DDR4-2400 / 2666', note:'CAREFUL: Z170/H110 only take 6/7th gen. Z370/Z390 take 8/9th gen. Check your chipset.' },
+  'LGA1200':    { era:'2020-2021', cpus:['i3-10100F  ~$55','i5-11400F  ~$100','i7-11700  ~$180','i9-11900K  ~$230'], ram:'DDR4-2933 / 3200', note:'Rocket Lake (11th gen) is the ceiling. 11400F is the best value here.' },
+  'LGA1700':    { era:'2021-2024', cpus:['i3-12100F  ~$90','i5-12400F  ~$130','i5-13400F  ~$150','i5-14400F  ~$175','i7-13700K  ~$290','i7-14700K  ~$330','i9-13900K  ~$420','i9-14900K  ~$460'], ram:'DDR4-3200 or DDR5-4800 / 5600 / 6400', note:'Supports 12/13/14th gen. 13700K is the king of value. BIOS update required for 13th/14th.' },
+  'LGA1851':    { era:'2024+',     cpus:['Core Ultra 5 245K  ~$320','Core Ultra 7 265K  ~$390','Core Ultra 9 285K  ~$590'], ram:'DDR5-5600 / 6400 (CUDIMM 8000+)', note:'Arrow Lake. Big efficiency gains, gaming perf trails 14900K in some titles.' },
+  'LGA1366':    { era:'2008-2011', cpus:['Xeon X5690  ~$25 used','i7-990X  ~$35 used','Xeon X5670 OC  ~$20'], ram:'DDR3 triple-channel 1333', note:'Legendary old HEDT. Xeons give 6c/12t on the cheap.' },
+  'LGA2011':    { era:'2011-2014', cpus:['Xeon E5-2670 v2  ~$40','i7-4930K  ~$70','Xeon E5-2689  ~$50'], ram:'DDR3 quad-channel 1600 / 1866', note:'Cheap 12+ core Xeons make this a budget workstation sweet spot.' },
+  'LGA2011-V3': { era:'2014-2017', cpus:['Xeon E5-2697 v3  ~$120','i7-5960X  ~$140','Xeon E5-2696 v4  ~$160'], ram:'DDR4 quad-channel 2133 / 2400', note:'Haswell-E / Broadwell-E. 18-core E5-2696 v4 still relevant for workstations.' },
+  'LGA2066':    { era:'2017-2019', cpus:['i9-9900X  ~$200','i9-10980XE  ~$400','i9-7980XE  ~$260'], ram:'DDR4 quad-channel 2666', note:'Skylake-X / Cascade Lake-X. Very hot chips — strong cooling required.' },
+  'AM2':        { era:'2006-2009', cpus:['Phenom II X4 940  ~$15 used','Athlon 64 X2 6400+  ~$10'], ram:'DDR2-800', note:'End of life. Replace the platform.' },
+  'AM2+':       { era:'2007-2010', cpus:['Phenom II X4 940  ~$15 used','Phenom II X6 1100T w/ AM2+ support  rare'], ram:'DDR2-800 / DDR3-1333', note:'Some AM2+ boards take Phenom II. Check BIOS.' },
+  'AM3':        { era:'2009-2011', cpus:['Phenom II X6 1100T  ~$30 used','Phenom II X4 970 BE  ~$15'], ram:'DDR3-1333', note:'X6 1100T is the best this socket saw. Not enough IPC for modern games.' },
+  'AM3+':       { era:'2011-2017', cpus:['FX-8350  ~$40 used','FX-8370  ~$50','FX-9590 (220W, water only)  ~$80'], ram:'DDR3-1866', note:'FX platform. 8-thread but weak per-core. Z87/Z97 Intel beats it for under $100 used.' },
+  'FM2+':       { era:'2014-2017', cpus:['A10-7890K  ~$30 used','Athlon X4 880K  ~$20'], ram:'DDR3-2133', note:'Kaveri / Godavari. Entry APUs only.' },
+  'AM4':        { era:'2017-2022', cpus:['Ryzen 5 2600  ~$50 used','Ryzen 5 3600  ~$80','Ryzen 5 5500  ~$80','Ryzen 5 5600  ~$110','Ryzen 7 3700X  ~$120','Ryzen 7 5700X  ~$170','Ryzen 7 5800X3D  ~$260','Ryzen 9 5900X  ~$230','Ryzen 9 5950X  ~$290'], ram:'DDR4-3200 / 3600', note:'MONSTER longevity. 5800X3D is still best value gaming CPU you can buy on AM4. Check BIOS supports Ryzen 5000.' },
+  'AM5':        { era:'2022+',     cpus:['Ryzen 5 7600  ~$180','Ryzen 5 7600X3D  ~$300','Ryzen 7 7700X  ~$290','Ryzen 7 7800X3D  ~$380','Ryzen 9 7900X  ~$360','Ryzen 9 7950X3D  ~$550','Ryzen 7 9800X3D  ~$480','Ryzen 9 9950X3D  ~$700'], ram:'DDR5-5200 / 6000 / 6400 (EXPO)', note:'9800X3D is the gaming GOAT as of 2025. AM5 committed to 2027+.' },
+  'TR4':        { era:'2017-2019', cpus:['Threadripper 2990WX  ~$300','2950X  ~$180'], ram:'DDR4 quad-channel 2933', note:'First-gen Threadripper. Cheap 32-core workstation if you find one.' },
+  'sTRX4':      { era:'2019-2020', cpus:['Threadripper 3970X  ~$1,200','3990X  ~$2,400'], ram:'DDR4 quad-channel 3200', note:'Zen 2 Threadripper. Still very capable for content creation.' },
+  'sTR5':       { era:'2023+',     cpus:['Threadripper 7980X  ~$5,000','7995WX  ~$10,000'], ram:'DDR5 quad-channel 5200', note:'Zen 4 Threadripper. Workstation-class only.' },
+};
+
 const GPU_DB = [
   ['RTX 5090', 'Halo (2025)', ["You're on the fastest GPU money buys. Hold."], 38500],
   ['RTX 5080', 'High-end (2025)', ['RTX 5090  ~$2,000'], 28200],
