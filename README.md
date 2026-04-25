@@ -123,6 +123,32 @@ Every dollar funds the next feature. Thanks for using LodeForge.
 
 ---
 
+
+---
+
+## 🌐 Web Edition Lite — `LodeForge.html`
+
+For when you can't install the desktop app: a single-file HTML port that lives at the repo root as **`LodeForge.html`**. Open it in any modern browser — no install, no server.
+
+**Why it exists:** the desktop `LodeForge.exe` is Windows-only and needs admin. The Web Edition Lite is for showing what LodeForge does, demoing the upgrade-advisor logic, or running it from a Chromebook / Linux box / phone where the .exe can't go.
+
+**What it does (auto, no benchmarks):**
+- Auto-detects GPU from the WebGL renderer string and matches against the same internal database the .exe uses
+- Reads thread count (`navigator.hardwareConcurrency`), RAM (rounded by `navigator.deviceMemory`), screen, form factor (handheld / laptop / desktop guess from UA + touch + screen)
+- Stress test pegs every browser thread + 256 MB RAM thrash; same silicon-rating formula as the .exe
+- Upgrade Advisor uses the same Sockets / GpuDb / GameWeights / 17 PerfTargets knowledge bank
+- Pick a CPU manually for the per-socket upgrade list and CPU bottleneck flag — selecting a CPU also adds its integrated graphics as a GPU option
+
+**What it CAN'T do (browser sandbox):**
+- ❌ Drive cloning, formatting, partition resize, USB speed test (need raw disk access)
+- ❌ ISO → USB writer (need kernel-level disk write)
+- ❌ Live CPU / RAM / GPU% / temperature sensors (no WMI / ACPI access in browser)
+- ❌ Motherboard + BIOS info, physical drives table, SMART data (no WMI access)
+- ❌ Disk Cleaner / App Killer / Driver Checker / Debloater (need elevated PowerShell)
+- ❌ System tray, Power Guard, Performance Overlay, RGB Sync, Phone Dashboard (need OS access)
+
+**Bottom line:** for the full automatic experience — real sensors, real SMART, real bootable USB, real RGB sync — get `LodeForge.exe`. The Web Edition Lite is the **demo + reference + pocket calculator** version.
+
 ## 📝 License
 
 Released under the MIT License. Use it, share it, fork it. Just don't pretend you wrote it.
