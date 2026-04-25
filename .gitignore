@@ -1,0 +1,9 @@
+# Local-only — exe ships via GitHub Releases, not git
+*.exe
+*.pdb
+dist/
+dist45/
+
+# Crash logs
+lodestone_crash.txt
+lodestone_selftest.txt
