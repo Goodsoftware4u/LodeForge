@@ -1,12 +1,12 @@
-# LodeForge — Home of Lodestone System Suite
+# LodeForge — A Free Windows System Suite
 
-> **LodeForge** is the project. **Lodestone** is the app it builds — a free, dark-themed Windows utility that does what you'd normally need a half-dozen separate tools for.
+A premium-feeling, dark-themed Windows utility that does what you'd normally need a half-dozen separate tools for.
 
 Live hardware monitoring, NVMe + SATA SMART, stress testing, ISO → USB writing, drive cloning, upgrade advice, and a Pi-hole-style **phone dashboard** you open from any browser on your Wi-Fi.
 
 Single 76 MB self-contained exe. No installer, no telemetry, no ads.
 
-![Lodestone — Hardware Diagnostics](screenshots/hardware-diagnostics.png)
+![LodeForge — Hardware Diagnostics](screenshots/hardware-diagnostics.png)
 
 ---
 
@@ -73,7 +73,7 @@ Single 76 MB self-contained exe. No installer, no telemetry, no ads.
 
 ## 📥 Install
 
-1. Download **`Lodestone.exe`** from the [latest release](../../releases/latest).
+1. Download **`LodeForge.exe`** from the [latest release](../../releases/latest).
 2. Right-click → **Run as Administrator** (required for SMART ioctls, firewall rule, powercfg).
 3. (Optional) Pin to Start or create a shortcut.
 
@@ -96,7 +96,7 @@ dotnet publish Forge/Forge.csproj ^
 
 A self-test mode is included for the Upgrade Advisor's bench engine:
 ```bat
-Lodestone.exe --self-test report.txt
+LodeForge.exe --self-test report.txt
 ```
 Should output `TOTAL: 1026 passed, 0 failed, 0 warnings`.
 
@@ -115,11 +115,11 @@ Should output `TOTAL: 1026 passed, 0 failed, 0 warnings`.
 
 ## 💚 Support
 
-If Lodestone saves you a SMART tool, a stress-test license, or a USB-bootable utility, donations keep projects like this coming.
+If LodeForge saves you a SMART tool, a stress-test license, or a USB-bootable utility, donations keep projects like this coming.
 
 **Cash App: `$SammyAlqouqa4`**
 
-Every dollar funds the next feature. Thanks for using Lodestone.
+Every dollar funds the next feature. Thanks for using LodeForge.
 
 ---
 
