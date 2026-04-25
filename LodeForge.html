@@ -1520,8 +1520,9 @@ function findIgpuRow(igpuLabel){
     }
   }
 
-  // Can my PC run it — uses manually-selected CPU + manual/auto GPU
-  document.getElementById('r-check').onclick = () => {
+  // Can my PC run it — uses manually-selected CPU + manual/auto GPU.
+  // Auto-recomputes whenever ANY input changes (target / game / GPU / CPU).
+  function runVerdict(){
     const rOut = document.getElementById('r-out');
     const gpu = getSelectedGpu();
     const cpu = getSelectedCpu();
@@ -1547,30 +1548,41 @@ function findIgpuRow(igpuLabel){
     else if (gpuRatio >= 0.40) { rating = 1; label = 'BELOW — playable only at low/FSR';  klass = 'warn'; }
     else                       { rating = 0; label = 'NO — GPU upgrade required';         klass = 'bad'; }
 
-    rOut.innerHTML = '';
-    rOut.innerHTML += '<span class="acc">═══  '+escapeHtml(game)+'  @  '+escapeHtml(targetLabel)+'  ═══</span>\n\n';
-    rOut.innerHTML += '  Game weight:  <span class="muted">x'+gw.w.toFixed(2)+'  ('+gw.label+')</span>\n\n';
-    rOut.innerHTML += '  Your GPU:     <span class="ok">'+gpu.row[0]+'</span>  (G3D ≈ '+haveGpu.toLocaleString()+')\n';
-    rOut.innerHTML += '    needs:      G3D ≈ '+adjGpuReq.toLocaleString()+'   →  '+(gpuRatio*100).toFixed(0)+'% of target\n\n';
+    let html = '';
+    html += '<span class="acc">═══  '+escapeHtml(game)+'  @  '+escapeHtml(targetLabel)+'  ═══</span>\n\n';
+    html += '  Game weight:  <span class="muted">x'+gw.w.toFixed(2)+'  ('+gw.label+')</span>\n\n';
+    html += '  Your GPU:     <span class="ok">'+gpu.row[0]+'</span>  (G3D ≈ '+haveGpu.toLocaleString()+')\n';
+    html += '    needs:      G3D ≈ '+adjGpuReq.toLocaleString()+'   →  '+(gpuRatio*100).toFixed(0)+'% of target\n\n';
 
     if (cpu) {
       const haveCpu = cpu[1];
       const cpuRatio = haveCpu / adjCpuReq;
       const cpuBottleneck = cpuRatio < 0.70;
-      rOut.innerHTML += '  Your CPU:     <span class="ok">'+cpu[0]+'</span>  (CPU Mark ≈ '+haveCpu.toLocaleString()+')\n';
-      rOut.innerHTML += '    needs:      CPU Mark ≈ '+adjCpuReq.toLocaleString()+'   →  '+(cpuRatio*100).toFixed(0)+'% of target\n\n';
-      rOut.innerHTML += '<span class="'+klass+'">  Verdict:    '+label+'  ['+rating+'/4]</span>\n';
+      html += '  Your CPU:     <span class="ok">'+cpu[0]+'</span>  (CPU Mark ≈ '+haveCpu.toLocaleString()+')\n';
+      html += '    needs:      CPU Mark ≈ '+adjCpuReq.toLocaleString()+'   →  '+(cpuRatio*100).toFixed(0)+'% of target\n\n';
+      html += '<span class="'+klass+'">  Verdict:    '+label+'  ['+rating+'/4]</span>\n';
       if (cpuBottleneck && rating > 0) {
-        rOut.innerHTML += '<span class="warn">  ⚠ CPU bottleneck — your GPU has headroom but the CPU is the limiting factor.</span>\n';
+        html += '<span class="warn">  ⚠ CPU bottleneck — your GPU has headroom but the CPU is the limiting factor.</span>\n';
       } else if (!cpuBottleneck && rating === 0) {
-        rOut.innerHTML += '<span class="muted">  CPU is fine — GPU is the issue.</span>\n';
+        html += '<span class="muted">  CPU is fine — GPU is the issue.</span>\n';
       }
     } else {
-      rOut.innerHTML += '  Your CPU:     <span class="muted">(not selected — pick a CPU above for full check + bottleneck flag)</span>\n\n';
-      rOut.innerHTML += '<span class="'+klass+'">  Verdict (GPU-only):  '+label+'  ['+rating+'/4]</span>\n';
+      html += '  Your CPU:     <span class="muted">(not selected — pick a CPU above for full check + bottleneck flag)</span>\n\n';
+      html += '<span class="'+klass+'">  Verdict (GPU-only):  '+label+'  ['+rating+'/4]</span>\n';
     }
-    rOut.innerHTML += '\n<span class="muted">Heuristic uses PassMark G3D Mark + CPU Mark with per-game weighting. Actual frame rates depend on settings, drivers, RAM speed, and the specific scene.</span>';
-  };
+    html += '\n<span class="muted">Heuristic uses PassMark G3D Mark + CPU Mark with per-game weighting. Actual frame rates depend on settings, drivers, RAM speed, and the specific scene.</span>';
+    rOut.innerHTML = html;
+  }
+
+  // Click button still triggers it explicitly…
+  document.getElementById('r-check').onclick = runVerdict;
+  // …and any change to target / game / GPU / CPU re-runs it instantly so the
+  // verdict actually updates (the old version only fired on Check click —
+  // changing the target dropdown afterwards looked like nothing happened).
+  document.getElementById('r-target').addEventListener('change', runVerdict);
+  document.getElementById('r-game').addEventListener('input', runVerdict);
+  gpuSel.addEventListener('change', runVerdict);
+  cpuSel.addEventListener('change', runVerdict);
 })();
 
 // ──────────────────────────────────────────────────────────────────────
