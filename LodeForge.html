@@ -302,26 +302,31 @@ select:focus,input:focus{outline:none;border-color:var(--accent)}
     <section class="page active" data-page="diag">
       <h1 class="big">Hardware Diagnostics 🖥</h1>
 
-      <!-- 4-up sensor row — mirrors desktop BuildSensorRow exactly:
-           SensorCard(title, sub1, sub2, val) renders title → val → sub1 → sub2 -->
+      <div class="warn-card">
+        <div class="info-title">⚠ Web Edition Lite — what the browser can show</div>
+        <div class="info-body">Browsers can't read live CPU% / RAM% / temps, motherboard / BIOS, SMART, or physical drives. The fields below are populated with what the browser <em>does</em> expose (GPU model from WebGL, thread count, RAM rounded, screen) — everything else is marked <code>—</code>. For the full live diagnostic experience, use <b>LodeForge.exe</b> on Windows.</div>
+      </div>
+
+      <!-- 4-up sensor row — same layout as desktop BuildSensorRow.
+           SensorCard order: title → val → sub1 → sub2 -->
       <div class="grid grid-4" style="margin-bottom:14px">
         <div class="sc">
           <div class="sc-title">CPU</div>
-          <div class="sc-val" id="d-cpu-pct" style="color:var(--text)">—%</div>
-          <div class="sc-sub1" id="d-cpu-name">Detecting…</div>
-          <div class="sc-sub2" id="d-cpu-info"></div>
+          <div class="sc-val" id="d-cpu-pct" style="color:var(--muted)">N/A</div>
+          <div class="sc-sub1" id="d-cpu-name">(model not exposed by browser)</div>
+          <div class="sc-sub2" id="d-cpu-info">—</div>
         </div>
         <div class="sc">
           <div class="sc-title">RAM</div>
-          <div class="sc-val" id="d-ram-pct" style="color:var(--text)">—%</div>
-          <div class="sc-sub1" id="d-ram-info">— free</div>
+          <div class="sc-val" id="d-ram-pct" style="color:var(--muted)">N/A</div>
+          <div class="sc-sub1" id="d-ram-info">— MB total</div>
           <div class="sc-sub2"></div>
         </div>
         <div class="sc">
           <div class="sc-title">CPU TEMP</div>
-          <div class="sc-val" id="d-cpu-temp" style="color:var(--muted)">—°C</div>
-          <div class="sc-sub1">Live ACPI sensor</div>
-          <div class="sc-sub2" id="d-cpu-temp-mm">min / max: —</div>
+          <div class="sc-val" id="d-cpu-temp" style="color:var(--muted)">N/A</div>
+          <div class="sc-sub1" id="d-cpu-temp-mm">no sensor (browser sandbox)</div>
+          <div class="sc-sub2"></div>
         </div>
         <div class="sc">
           <div class="sc-title">GPU</div>
@@ -948,14 +953,13 @@ function guessDeviceProfile(){
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// HARDWARE DIAGNOSTICS — live sensor row + table fills
+// HARDWARE DIAGNOSTICS — populates everything the browser can expose
+// once on load. No polling — the browser doesn't have live sensors to
+// poll, so a setInterval just makes the page look stuck without ever
+// changing anything meaningful.
 // ──────────────────────────────────────────────────────────────────────
-let _cpuBaseline = 0;
-let _tempMin = Infinity, _tempMax = -Infinity;
-
 (function initDiag(){
   refreshDiagAll();
-  setInterval(updateLiveSensors, 2500);
   document.getElementById('d-refresh').onclick = refreshDiagAll;
 })();
 
@@ -973,43 +977,42 @@ function estimatePhysCores(threads){
 }
 
 function refreshDiagAll(){
-  // GPU — auto-detected from WebGL renderer (real, not guessed)
-  const gpu = detectGpu();
-  if (gpu.row) {
-    document.getElementById('d-gpu-name').textContent = gpu.row[0];
-    document.getElementById('d-gpu-info').textContent = gpu.row[1] +
-      '  •  ' + screen.width + 'x' + screen.height;
-  } else {
-    document.getElementById('d-gpu-name').textContent = gpu.raw ? gpu.raw.split('(')[0].trim() : 'Unknown GPU';
-    document.getElementById('d-gpu-info').textContent = (gpu.vendor || '') +
-      '  •  ' + screen.width + 'x' + screen.height;
+  // GPU — auto-detected from WebGL renderer
+  try {
+    const gpu = detectGpu();
+    if (gpu.row) {
+      document.getElementById('d-gpu-name').textContent = gpu.row[0];
+      document.getElementById('d-gpu-info').textContent = gpu.row[1] + '  •  ' + screen.width + 'x' + screen.height;
+    } else if (gpu.raw) {
+      document.getElementById('d-gpu-name').textContent = gpu.raw.split('(')[0].trim() + '  (not in DB)';
+      document.getElementById('d-gpu-info').textContent = (gpu.vendor || '') + '  •  ' + screen.width + 'x' + screen.height;
+    } else {
+      document.getElementById('d-gpu-name').textContent = '(WebGL renderer info blocked by browser)';
+      document.getElementById('d-gpu-info').textContent = screen.width + 'x' + screen.height;
+    }
+  } catch (e) {
+    document.getElementById('d-gpu-name').textContent = '(WebGL unavailable)';
+    document.getElementById('d-gpu-info').textContent = '';
   }
 
-  // CPU — same display shape as desktop:
-  //   sub1 = cpu.Name (browser can't read this — show "(model not exposed by browser)")
-  //   sub2 = "{phys}c / {threads}t  •  {MHz} MHz  •  {Socket}"
-  // Threads (navigator.hardwareConcurrency) is real; cores estimated from UA;
-  // MHz / socket are not exposed by any web API — shown as "—".
+  // CPU — only thread count is real; everything else is "—".
   const threads = navigator.hardwareConcurrency || 0;
-  const cores   = estimatePhysCores(threads);
-  document.getElementById('d-cpu-name').textContent =
-    threads ? '(model not exposed by browser)' : 'Detecting…';
+  const cores = estimatePhysCores(threads);
+  document.getElementById('d-cpu-name').textContent = '(model not exposed by browser)';
   document.getElementById('d-cpu-info').textContent =
     (cores ? cores + 'c' : '—c') + ' / ' + (threads || '?') + 't  •  — MHz  •  — socket';
 
-  // RAM — desktop format: "{free} MB free / {total} MB"
-  // Browser only exposes total via deviceMemory (rounded to nearest power of 2);
-  // free RAM is not exposed.
+  // RAM — only total exposed (rounded to power of 2 for privacy)
   const ramGb = navigator.deviceMemory || 0;
-  document.getElementById('d-ram-info').textContent =
-    ramGb > 0
-      ? '— MB free / ' + (ramGb * 1024).toLocaleString() + ' MB'
-      : '— MB free / — MB';
+  document.getElementById('d-ram-info').textContent = ramGb > 0
+    ? (ramGb * 1024).toLocaleString() + ' MB total  (rounded by browser)'
+    : '(deviceMemory not exposed by this browser)';
 
-  // Mobo card — keeps the desktop's "Reading WMI…" loading text.
-  // Browser cannot read WMI; the placeholder stays indefinitely.
+  // CPU TEMP — no sensor in browser
+  document.getElementById('d-cpu-temp').textContent = 'N/A';
+  document.getElementById('d-cpu-temp-mm').textContent = 'no sensor (browser sandbox)';
 
-  // Logical volumes — populate with the origin's storage quota only.
+  // Logical volumes — origin storage quota only
   const vol = document.getElementById('d-volumes');
   vol.innerHTML = '';
   if (navigator.storage && navigator.storage.estimate) {
@@ -1019,49 +1022,14 @@ function refreshDiagAll(){
       const used  = est.quota ? Math.round((est.usage || 0) / est.quota * 100) : 0;
       vol.innerHTML = '<tr><td>(origin)</td><td>—</td><td>—</td><td>Sandbox</td>' +
         '<td>'+total.toFixed(1)+'</td><td>'+free.toFixed(1)+'</td><td>'+used+'%</td></tr>';
-    });
+    }).catch(() => {});
   }
-
-  updateLiveSensors();
 }
 
-function updateLiveSensors(){
-  // CPU% estimate via tight-loop timing
-  const cpuPct = measureCpuLoad();
-  const cpuEl = document.getElementById('d-cpu-pct');
-  cpuEl.textContent = cpuPct.toFixed(0) + '%';
-  cpuEl.style.color = cpuPct > 90 ? 'var(--bad)' : cpuPct > 70 ? 'var(--warn)' : 'var(--ok)';
-
-  // RAM% via JS heap (tab-only; honest fallback)
-  if (performance.memory) {
-    const used = performance.memory.usedJSHeapSize;
-    const cap  = performance.memory.jsHeapSizeLimit;
-    const pct  = (used / cap) * 100;
-    const ramEl = document.getElementById('d-ram-pct');
-    ramEl.textContent = pct.toFixed(0) + '% ';
-    ramEl.style.color = pct > 90 ? 'var(--bad)' : pct > 75 ? 'var(--warn)' : 'var(--ok)';
-    document.getElementById('d-ram-info').textContent =
-      (used/1e6).toFixed(0) + ' MB used / ' + (cap/1e6).toFixed(0) + ' MB heap cap   (this tab only)';
-  }
-  // Temp: not available in browser
-  document.getElementById('d-cpu-temp').textContent = 'N/A';
-  document.getElementById('d-cpu-temp-mm').textContent = 'no sensor (browser sandbox)';
-}
-
+// Stubs left for backwards compat — no longer called on an interval.
+function updateLiveSensors(){ /* removed: no live data the browser can read */ }
 function measureCpuLoad(){
-  // Tight-loop ops in 25 ms; compare to baseline (set on first call when
-  // system is hopefully idle). Lower count = higher load on the system.
-  const start = performance.now();
-  let n = 0;
-  let x = 0.001;
-  while (performance.now() - start < 25) {
-    for (let i = 0; i < 1000; i++) { x = Math.sqrt(x*1.001 + 0.5); if (x > 1e9) x = 0.001; }
-    n += 1000;
-  }
-  if (_cpuBaseline === 0) { _cpuBaseline = n; return 0; }
-  if (n > _cpuBaseline) _cpuBaseline = n;
-  const ratio = n / _cpuBaseline;
-  return Math.max(0, Math.min(100, (1 - ratio) * 100));
+  return 0;
 }
 
 // ──────────────────────────────────────────────────────────────────────
