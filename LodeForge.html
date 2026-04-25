@@ -465,19 +465,19 @@ select:focus,input:focus{outline:none;border-color:var(--accent)}
       <div style="font-weight:700;font-size:13px;margin:14px 0 8px">Pick the hardware your browser can't read:</div>
       <div class="toolbar">
         <label>CPU:</label>
-        <select id="u-cpu" style="min-width:300px">
+        <select id="u-cpu" style="min-width:240px;max-width:100%;flex:1 1 280px">
           <option value="" selected>(auto — let the analyzer guess from form factor)</option>
         </select>
         <label style="margin-left:14px">Socket:</label>
-        <select id="u-sock" style="min-width:200px">
+        <select id="u-sock" style="min-width:160px;max-width:100%;flex:0 1 220px">
           <option value="" selected>(auto)</option>
         </select>
       </div>
       <div style="font-weight:700;font-size:13px;margin:14px 0 8px">GPU (auto-detected — change if browser blocked WebGL renderer info):</div>
       <div class="toolbar">
         <label>GPU:</label>
-        <select id="u-gpu" style="min-width:380px"></select>
-        <span id="u-gpu-detected" style="color:var(--muted);font-size:12px;font-weight:700;margin-left:10px"></span>
+        <select id="u-gpu" style="min-width:260px;max-width:100%;flex:1 1 320px"></select>
+        <span id="u-gpu-detected" style="color:var(--muted);font-size:12px;font-weight:700;margin-left:10px;flex:1 1 100%"></span>
       </div>
 
       <!-- Big analysis output box (auto-populates on tab open) -->
@@ -1251,7 +1251,36 @@ function findIgpuRow(igpuLabel){
     sockSel.appendChild(o);
   });
 
-  // Populate GPU dropdown
+  // Group GPUs into <optgroup> sections so the 80-item native dropdown stays
+  // navigable. Same buckets as the .exe's GpuDb ordering.
+  function gpuCategory(name) {
+    if (/^RTX 50/.test(name))                          return 'NVIDIA RTX 50  (2025)';
+    if (/^RTX 40/.test(name))                          return 'NVIDIA RTX 40  (2022-2024)';
+    if (/^RTX 30/.test(name))                          return 'NVIDIA RTX 30  (2020-2022)';
+    if (/^RTX 20/.test(name))                          return 'NVIDIA RTX 20  (2018-2019)';
+    if (/^GTX 16/.test(name))                          return 'NVIDIA GTX 16  (2019)';
+    if (/^GTX 10/.test(name))                          return 'NVIDIA GTX 10  (2016-2017)';
+    if (/^GTX 9\d/.test(name))                         return 'NVIDIA GTX 900  (2014-2015)';
+    if (/^GTX 7\d/.test(name))                         return 'NVIDIA GTX 700  (2013)';
+    if (/^GTX 5\d/.test(name))                         return 'NVIDIA GTX 500  (2010-2011)';
+    if (/^RX 9\d/.test(name))                          return 'AMD RX 9000  (2025)';
+    if (/^RX 7\d/.test(name))                          return 'AMD RX 7000  (2022-2024)';
+    if (/^RX 6\d/.test(name))                          return 'AMD RX 6000  (2020-2022)';
+    if (/^RX 5\d/.test(name))                          return 'AMD RX 5000  (2019-2020)';
+    if (/^(Radeon VII|Vega|RX 4\d\d|RX 5\d\d|RX 590|RX 580|RX 570)/.test(name)) return 'AMD Vega + Polaris  (2016-2019)';
+    if (/^Arc/.test(name))                             return 'Intel Arc';
+    if (/Radeon \d{3}M|iGPU|Iris|UHD|Arc Graphics|HD Graphics/.test(name)) return 'Integrated GPUs';
+    return 'Other';
+  }
+  const GPU_CATEGORY_ORDER = [
+    'NVIDIA RTX 50  (2025)','NVIDIA RTX 40  (2022-2024)','NVIDIA RTX 30  (2020-2022)',
+    'NVIDIA RTX 20  (2018-2019)','NVIDIA GTX 16  (2019)','NVIDIA GTX 10  (2016-2017)',
+    'NVIDIA GTX 900  (2014-2015)','NVIDIA GTX 700  (2013)','NVIDIA GTX 500  (2010-2011)',
+    'AMD RX 9000  (2025)','AMD RX 7000  (2022-2024)','AMD RX 6000  (2020-2022)',
+    'AMD RX 5000  (2019-2020)','AMD Vega + Polaris  (2016-2019)','Intel Arc','Integrated GPUs','Other',
+  ];
+
+  // Populate GPU dropdown with optgroups
   function rebuildGpuDropdown(extraIgpu){
     gpuSel.innerHTML = '';
     const auto = document.createElement('option');
@@ -1262,15 +1291,26 @@ function findIgpuRow(igpuLabel){
     if (extraIgpu) {
       const o = document.createElement('option');
       o.value = extraIgpu[0];
-      o.textContent = '🔵 ' + extraIgpu[0] + '   (integrated — from selected CPU)';
+      o.textContent = '🔵 ' + extraIgpu[0] + '  (integrated — from selected CPU)';
       gpuSel.appendChild(o);
     }
+    const groups = {};
     GPU_DB.forEach(row => {
-      const o = document.createElement('option');
-      o.value = row[0];
-      o.textContent = row[0] + '   (' + row[1] + ')';
-      gpuSel.appendChild(o);
+      const cat = gpuCategory(row[0]);
+      (groups[cat] = groups[cat] || []).push(row);
     });
+    for (const cat of GPU_CATEGORY_ORDER) {
+      if (!groups[cat]) continue;
+      const og = document.createElement('optgroup');
+      og.label = cat;
+      groups[cat].forEach(row => {
+        const o = document.createElement('option');
+        o.value = row[0];
+        o.textContent = row[0] + '   (' + row[1] + ')';
+        og.appendChild(o);
+      });
+      gpuSel.appendChild(og);
+    }
   }
   rebuildGpuDropdown(null);
 
