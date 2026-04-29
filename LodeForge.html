@@ -668,7 +668,7 @@ const SOCKETS = {
   'LGA1151':    { era:'2015-2020', cpus:['i7-7700K  ~$60 used (v1 board)','i5-9400F  ~$50','i7-8700K  ~$90','i7-9700K  ~$110','i9-9900K  ~$150'], ram:'DDR4-2400 / 2666', note:'CAREFUL: Z170/H110 only take 6/7th gen. Z370/Z390 take 8/9th gen. Check your chipset.' },
   'LGA1200':    { era:'2020-2021', cpus:['i3-10100F  ~$55','i5-11400F  ~$100','i7-11700  ~$180','i9-11900K  ~$230'], ram:'DDR4-2933 / 3200', note:'Rocket Lake (11th gen) is the ceiling. 11400F is the best value here.' },
   'LGA1700':    { era:'2021-2024', cpus:['i3-12100F  ~$90','i5-12400F  ~$130','i5-13400F  ~$150','i5-14400F  ~$175','i7-13700K  ~$290','i7-14700K  ~$330','i9-13900K  ~$420','i9-14900K  ~$460'], ram:'DDR4-3200 or DDR5-4800 / 5600 / 6400', note:'Supports 12/13/14th gen. 13700K is the king of value. BIOS update required for 13th/14th.' },
-  'LGA1851':    { era:'2024+',     cpus:['Core Ultra 5 245K  ~$320','Core Ultra 7 265K  ~$390','Core Ultra 9 285K  ~$590'], ram:'DDR5-5600 / 6400 (CUDIMM 8000+)', note:'Arrow Lake. Big efficiency gains, gaming perf trails 14900K in some titles.' },
+  'LGA1851':    { era:'2024+',     cpus:['Core Ultra 5 235  ~$220','Core Ultra 5 245K  ~$320','Core Ultra 7 265  ~$330','Core Ultra 7 265K  ~$390','Core Ultra 9 285K  ~$590'], ram:'DDR5-5600 / 6400 (CUDIMM 8000+)', note:'Arrow Lake (Core Ultra 200S). Big efficiency gains, gaming perf trails 14900K in some titles. Panther Lake (Core Ultra 300) is laptop-only — no desktop refresh planned for 2026.' },
   'LGA1366':    { era:'2008-2011', cpus:['Xeon X5690  ~$25 used','i7-990X  ~$35 used','Xeon X5670 OC  ~$20'], ram:'DDR3 triple-channel 1333', note:'Legendary old HEDT. Xeons give 6c/12t on the cheap.' },
   'LGA2011':    { era:'2011-2014', cpus:['Xeon E5-2670 v2  ~$40','i7-4930K  ~$70','Xeon E5-2689  ~$50'], ram:'DDR3 quad-channel 1600 / 1866', note:'Cheap 12+ core Xeons make this a budget workstation sweet spot.' },
   'LGA2011-V3': { era:'2014-2017', cpus:['Xeon E5-2697 v3  ~$120','i7-5960X  ~$140','Xeon E5-2696 v4  ~$160'], ram:'DDR4 quad-channel 2133 / 2400', note:'Haswell-E / Broadwell-E. 18-core E5-2696 v4 still relevant for workstations.' },
@@ -679,7 +679,7 @@ const SOCKETS = {
   'AM3+':       { era:'2011-2017', cpus:['FX-8350  ~$40 used','FX-8370  ~$50','FX-9590 (220W, water only)  ~$80'], ram:'DDR3-1866', note:'FX platform. 8-thread but weak per-core. Z87/Z97 Intel beats it for under $100 used.' },
   'FM2+':       { era:'2014-2017', cpus:['A10-7890K  ~$30 used','Athlon X4 880K  ~$20'], ram:'DDR3-2133', note:'Kaveri / Godavari. Entry APUs only.' },
   'AM4':        { era:'2017-2022', cpus:['Ryzen 5 2600  ~$50 used','Ryzen 5 3600  ~$80','Ryzen 5 5500  ~$80','Ryzen 5 5600  ~$110','Ryzen 7 3700X  ~$120','Ryzen 7 5700X  ~$170','Ryzen 7 5800X3D  ~$260','Ryzen 9 5900X  ~$230','Ryzen 9 5950X  ~$290'], ram:'DDR4-3200 / 3600', note:'MONSTER longevity. 5800X3D is still best value gaming CPU you can buy on AM4. Check BIOS supports Ryzen 5000.' },
-  'AM5':        { era:'2022+',     cpus:['Ryzen 5 7600  ~$180','Ryzen 5 7600X3D  ~$300','Ryzen 7 7700X  ~$290','Ryzen 7 7800X3D  ~$380','Ryzen 9 7900X  ~$360','Ryzen 9 7950X3D  ~$550','Ryzen 7 9800X3D  ~$480','Ryzen 9 9950X3D  ~$700'], ram:'DDR5-5200 / 6000 / 6400 (EXPO)', note:'9800X3D is the gaming GOAT as of 2025. AM5 committed to 2027+.' },
+  'AM5':        { era:'2022+',     cpus:['Ryzen 5 7600  ~$180','Ryzen 5 7600X3D  ~$300','Ryzen 5 9600  ~$220','Ryzen 5 9600X  ~$260','Ryzen 7 7700X  ~$290','Ryzen 7 7800X3D  ~$380','Ryzen 7 9700X  ~$340','Ryzen 7 9800X3D  ~$480','Ryzen 9 7900X  ~$360','Ryzen 9 7950X3D  ~$550','Ryzen 9 9900X3D  ~$600','Ryzen 9 9950X3D  ~$700'], ram:'DDR5-5200 / 6000 / 6400 (EXPO)', note:'9800X3D is the gaming GOAT through 2025-2026. AM5 confirmed through Zen 6 (Ryzen 10000 / "Medusa", expected late 2026 / early 2027).' },
   'TR4':        { era:'2017-2019', cpus:['Threadripper 2990WX  ~$300','2950X  ~$180'], ram:'DDR4 quad-channel 2933', note:'First-gen Threadripper. Cheap 32-core workstation if you find one.' },
   'sTRX4':      { era:'2019-2020', cpus:['Threadripper 3970X  ~$1,200','3990X  ~$2,400'], ram:'DDR4 quad-channel 3200', note:'Zen 2 Threadripper. Still very capable for content creation.' },
   'sTR5':       { era:'2023+',     cpus:['Threadripper 7980X  ~$5,000','7995WX  ~$10,000'], ram:'DDR5 quad-channel 5200', note:'Zen 4 Threadripper. Workstation-class only.' },
@@ -738,6 +738,7 @@ const GPU_DB = [
   ['GTX 580', 'Era 2010', ['RX 6500 XT  ~$140','RTX 3050  ~$180'], 3500],
   ['RX 9070 XT', 'High (2025)', ['RTX 5080  ~$1,000','RTX 5070 Ti  ~$750'], 26000],
   ['RX 9070', 'Upper-mid (2025)', ['RX 9070 XT  ~$600','RTX 5070 Ti  ~$750'], 22000],
+  ['RX 9060 XT', 'Mid (2025)', ['RX 9070  ~$550','RTX 5070  ~$550'], 20100],
   ['RX 7900 XTX', 'Halo (2022)', ['RTX 5090  ~$2,000','RX 9070 XT  ~$600'], 30300],
   ['RX 7900 XT', 'High (2022)', ['RTX 5080  ~$1,000','RTX 4080 Super  ~$1,000'], 27000],
   ['RX 7900 GRE', 'Upper-mid (2024)', ['RTX 4070 Ti Super  ~$800','RX 9070 XT  ~$600'], 24000],
@@ -1136,10 +1137,13 @@ function measureCpuLoad(){
 // igpuName is matched against GPU_DB; null = no iGPU (e.g. F-suffix).
 const CPU_DB = [
   ['Ryzen 9 9950X3D',      76000, 'Radeon Graphics (RDNA 2 basic)'],
+  ['Ryzen 9 9900X3D',      62000, 'Radeon Graphics (RDNA 2 basic)'],
   ['Ryzen 7 9800X3D',      56500, 'Radeon Graphics (RDNA 2 basic)'],
   ['Ryzen 9 9950X',        73500, 'Radeon Graphics (RDNA 2 basic)'],
+  ['Ryzen 9 9900X',        60300, 'Radeon Graphics (RDNA 2 basic)'],
   ['Ryzen 7 9700X',        39600, 'Radeon Graphics (RDNA 2 basic)'],
   ['Ryzen 5 9600X',        33800, 'Radeon Graphics (RDNA 2 basic)'],
+  ['Ryzen 5 9600',         31000, 'Radeon Graphics (RDNA 2 basic)'],
   ['Ryzen 9 7950X3D',      63500, 'Radeon Graphics (RDNA 2 basic)'],
   ['Ryzen 9 7950X',        64000, 'Radeon Graphics (RDNA 2 basic)'],
   ['Ryzen 7 7800X3D',      36200, 'Radeon Graphics (RDNA 2 basic)'],
@@ -1158,6 +1162,13 @@ const CPU_DB = [
   ['Ryzen 7 2700X',        17500, null],
   ['Ryzen 5 2600',         13700, null],
   // Mobile / Handheld APUs (with iGPU)
+  ['Ryzen AI Max+ 395',    47000, 'Radeon 8060S (Strix Halo, 40 CU RDNA 3.5)'],
+  ['Ryzen AI Max 390',     42000, 'Radeon 8050S (Strix Halo, 32 CU RDNA 3.5)'],
+  ['Ryzen AI 9 HX 375',    37700, 'Radeon 890M'],
+  ['Ryzen AI 9 HX 370',    37000, 'Radeon 890M'],
+  ['Ryzen AI 9 365',       30000, 'Radeon 880M'],
+  ['Ryzen AI 7 350',       24000, 'Radeon 860M'],
+  ['Ryzen AI 5 340',       20000, 'Radeon 840M'],
   ['Ryzen Z2 Extreme',     19500, 'Radeon 890M'],
   ['Ryzen Z1 Extreme',     17000, 'Radeon 780M'],
   ['Ryzen Z1',             11000, 'Radeon 740M (Z1 iGPU)'],
@@ -1167,12 +1178,38 @@ const CPU_DB = [
   ['Ryzen 7 6800U',        18000, 'Radeon 680M'],
   ['Ryzen 7 5800U',        18000, 'Vega 8 (RDNA pre-3 iGPU)'],
   ['Ryzen 5 5600U',        13000, 'Vega 7 (RDNA pre-3 iGPU)'],
-  // Intel Core Ultra (Arrow Lake desktop / Meteor Lake mobile)
+  // Intel Core Ultra Series 2 desktop (Arrow Lake-S)
   ['Core Ultra 9 285K',    64000, 'UHD Graphics 770'],
   ['Core Ultra 7 265K',    53000, 'UHD Graphics 770'],
   ['Core Ultra 5 245K',    42000, 'UHD Graphics 770'],
+  ['Core Ultra 7 265',     49000, 'UHD Graphics 770'],
+  ['Core Ultra 5 235',     34000, 'UHD Graphics 770'],
+  // Intel Core Ultra Series 2 mobile HX (Arrow Lake-HX, 24-core flagship)
+  ['Core Ultra 9 285HX',   58000, 'Arc Graphics (Xe-LPG+)'],
+  ['Core Ultra 9 275HX',   52000, 'Arc Graphics (Xe-LPG+)'],
+  ['Core Ultra 7 265HX',   46000, 'Arc Graphics (Xe-LPG+)'],
+  ['Core Ultra 7 255HX',   40000, 'Arc Graphics (Xe-LPG+)'],
+  ['Core Ultra 5 245HX',   34000, 'Arc Graphics (Xe-LPG+)'],
+  ['Core Ultra 5 235HX',   28000, 'Arc Graphics (Xe-LPG+)'],
+  // Intel Core Ultra Series 2 mobile H (Arrow Lake-H)
+  ['Core Ultra 9 285H',    35000, 'Arc Graphics 140T (Xe-LPG+)'],
+  ['Core Ultra 7 265H',    32000, 'Arc Graphics 140T (Xe-LPG+)'],
+  ['Core Ultra 7 255H',    29000, 'Arc Graphics 140T (Xe-LPG+)'],
+  ['Core Ultra 5 235H',    24000, 'Arc Graphics 130T (Xe-LPG+)'],
+  ['Core Ultra 5 225H',    21000, 'Arc Graphics 130T (Xe-LPG+)'],
+  // Intel Core Ultra Series 2 mobile V (Lunar Lake — 8-core, integrated memory)
+  ['Core Ultra 9 288V',    17500, 'Arc Graphics 140V (Xe2)'],
+  ['Core Ultra 7 268V',    17000, 'Arc Graphics 140V (Xe2)'],
+  ['Core Ultra 7 258V',    16500, 'Arc Graphics 140V (Xe2)'],
+  ['Core Ultra 7 256V',    16000, 'Arc Graphics 140V (Xe2)'],
+  ['Core Ultra 5 238V',    14500, 'Arc Graphics 130V (Xe2)'],
+  ['Core Ultra 5 228V',    13000, 'Arc Graphics 130V (Xe2)'],
+  ['Core Ultra 5 226V',    12500, 'Arc Graphics 130V (Xe2)'],
+  // Intel Core Ultra Series 1 mobile (Meteor Lake, 2023-2024)
   ['Core Ultra 9 185H',    33000, 'Arc Graphics'],
+  ['Core Ultra 7 165H',    30000, 'Arc Graphics'],
   ['Core Ultra 7 155H',    28000, 'Arc Graphics'],
+  ['Core Ultra 5 135H',    24000, 'Arc Graphics'],
   ['Core Ultra 5 125H',    22000, 'Arc Graphics'],
   // 14th gen
   ['i9-14900K',            60000, 'UHD Graphics 770'],
@@ -1557,14 +1594,25 @@ function findIgpuRow(igpuLabel){
     if (cpu) {
       const haveCpu = cpu[1];
       const cpuRatio = haveCpu / adjCpuReq;
-      const cpuBottleneck = cpuRatio < 0.70;
+      // Only flag a SERIOUS CPU bottleneck: CPU well below target AND clearly
+      // weaker than GPU relative to their respective targets. Don't ever flag
+      // a GPU bottleneck — that's the normal case at 1440p/4K and just adds
+      // noise. Old check (cpuRatio < 0.70 alone) wrongly flagged CPU at high
+      // resolutions where GPU req grows fastest.
+      const cpuBottleneck = cpuRatio < 0.75 && cpuRatio < gpuRatio - 0.30;
+      // Major RAM bottleneck — only when game is actually demanding AND we
+      // can SEE the RAM is low. navigator.deviceMemory caps at 8 GB in most
+      // browsers for privacy, so we can only catch <8 GB systems reliably.
+      const ramGb = navigator.deviceMemory || 0;
+      const ramBottleneck = ramGb > 0 && ramGb < 8 && gw.w >= 1.0;
       html += '  Your CPU:     <span class="ok">'+cpu[0]+'</span>  (CPU Mark ≈ '+haveCpu.toLocaleString()+')\n';
       html += '    needs:      CPU Mark ≈ '+adjCpuReq.toLocaleString()+'   →  '+(cpuRatio*100).toFixed(0)+'% of target\n\n';
       html += '<span class="'+klass+'">  Verdict:    '+label+'  ['+rating+'/4]</span>\n';
-      if (cpuBottleneck && rating > 0) {
-        html += '<span class="warn">  ⚠ CPU bottleneck — your GPU has headroom but the CPU is the limiting factor.</span>\n';
-      } else if (!cpuBottleneck && rating === 0) {
-        html += '<span class="muted">  CPU is fine — GPU is the issue.</span>\n';
+      if (cpuBottleneck) {
+        html += '<span class="warn">  ⚠ CPU bottleneck — GPU has headroom ('+(gpuRatio*100).toFixed(0)+'%) but CPU ('+(cpuRatio*100).toFixed(0)+'%) can\'t keep up. CPU upgrade will lift fps.</span>\n';
+      }
+      if (ramBottleneck) {
+        html += '<span class="warn">  ⚠ RAM bottleneck — only '+ramGb+' GB detected. Modern AAA titles recommend 16 GB; expect stutter and texture pop-in.</span>\n';
       }
     } else {
       html += '  Your CPU:     <span class="muted">(not selected — pick a CPU above for full check + bottleneck flag)</span>\n\n';
